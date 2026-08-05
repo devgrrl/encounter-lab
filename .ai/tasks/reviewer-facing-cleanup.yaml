@@ -1,0 +1,32 @@
+id: reviewer-facing-cleanup-001
+objective: >
+  Remove local/internal artifacts that would ship in a submission zip but add
+  no value to a reviewer, and fix a real correctness bug found while doing a
+  final pass on the damage-type VFX. This is a job-interview work sample and
+  must not read as cluttered.
+scope:
+  allow:
+    - .claude/**
+    - .gitignore
+    - docs/exec-plans/**
+    - MANIFEST.sha256
+    - src/EncounterLab.Web/coverage/**
+    - tools/package.py
+    - src/EncounterLab.Web/src/scene/DamageEffects.tsx
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+acceptance:
+  - no machine-local tool config (.claude/) remains in the working tree
+  - no stale internal planning doc contradicts the actual current, validated state
+  - no stale checksum manifest sits in the repo root when the packaging script explicitly regenerates it fresh
+  - no generated test-report output (coverage/) sits in the working tree
+  - the .claude/ exclusion is also added to tools/package.py and .gitignore so it cannot silently reappear in a future submission zip
+  - any real defect found while reviewing scene code during this pass gets fixed, not just noted
+validation:
+  - manual repo-root and docs/ directory listing review
+  - grep for stale references before deleting any doc
+  - npm run typecheck / python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py after the DamageEffects.tsx fix
+risk: low
+approval:
+  before_merge: human

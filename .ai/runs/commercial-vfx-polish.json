@@ -1,0 +1,25 @@
+{
+  "taskId": "commercial-vfx-polish-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-05",
+  "acceptedFiles": [
+    "src/EncounterLab.Web/src/scene/DamageEffects.tsx"
+  ],
+  "implementation": {
+    "SLASHING": "Replaced the single fading ring-arc with two arcs sweeping the same path at offset speeds (a bright additive-blended leading edge, a dimmer wider trailing wake), plus a real THREE.Points spark burst that releases tangent to the blade's current sweep angle rather than radiating from a fixed center - reads as grit kicked off a moving blade, not a static shape.",
+    "FIRE": "Added a fireball corona: three small flame-tongue cones parented to the shared approach projectile, orbiting it during travel (previously every damage type shared one identical glowing-orb projectile with no type-specific silhouette). Extended the shared comet trail from 3 to 5 segments with additive blending and a two-tone gradient (hot core color into the accent color further back). Impact now uses a THREE.Points ember burst (28 particles) instead of 4 discrete ember spheres.",
+    "COLD": "Swapped the plain boxGeometry ice block for an icosahedron with meshPhysicalMaterial's ior and clearcoat properties added (physically-based frosted-glass look, not just transmission+roughness as before). Added a THREE.Points frost-mist burst (22 particles) that releases at the shatter moment alongside the existing shard shatter.",
+    "remaining10Types": "Added blending={AdditiveBlending} to every material that represents actual light/energy across PIERCING (flash, cracks), THUNDER (shockwave rings), LIGHTNING (bolt segments), RADIANT (beam, rays, flash), PSYCHIC (warp rings), and FORCE (shards) - genuine additive light-stacking rather than flat opaque color. Deliberately left BLUDGEONING's dust ring, ACID's puddle/droplets, POISON's gas puffs, and NECROTIC's tendrils/pulse on normal blending, since additive would make physical debris, liquid, and gas read as glowing energy, which is wrong for what those types represent."
+  },
+  "sharedInfrastructureAdded": "A generic Points-particle burst system (burstPositions() for seeding deterministic outward-cone directions, animateBurst() for expanding/fading a burst by progress) was added to RefBag/DamageEffect rather than writing bespoke particle-animation code per type, so FIRE's embers and COLD's frost mist share one real implementation. SLASHING's spark burst needed a different motion (tangent-to-blade, not radial-from-center) so it animates inline rather than through animateBurst().",
+  "executedValidation": [
+    "npx tsc --noEmit -p tsconfig.app.json: clean",
+    "python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py: all passed",
+    "live headless-browser run against the actual dev server: healed to full, then triggered SLASHING/FIRE/COLD damage in sequence and screenshotted each - zero console/page errors, and each screenshot shows type-appropriate colored particles rendering at the correct target position (the exact peak-action frame wasn't caught by the fixed 550ms screenshot delay relative to each effect's ~1.1-1.6s total duration, which is a static-capture timing limitation, not a code defect - the underlying animation logic was verified by code review, not just by the screenshot)"
+  ],
+  "notYetDone": [
+    "No live screenshot verification of the other 10 damage types (BLUDGEONING, PIERCING, ACID, THUNDER, LIGHTNING, POISON, RADIANT, NECROTIC, PSYCHIC, FORCE) individually - only SLASHING/FIRE/COLD (the three the operator named explicitly) were triggered and screenshotted. The additive-blending changes to the other 6 types with glow-type materials were verified by code review and a clean typecheck, not by individually triggering and watching each one."
+  ]
+}

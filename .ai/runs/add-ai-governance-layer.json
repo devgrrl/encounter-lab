@@ -1,0 +1,33 @@
+{
+  "taskId": "add-ai-governance-layer-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-04",
+  "acceptedFiles": [
+    "AGENTS.md",
+    ".github/copilot-instructions.md",
+    ".github/instructions/backend-domain.instructions.md",
+    ".github/instructions/frontend-client.instructions.md",
+    ".github/instructions/accessibility.instructions.md",
+    ".github/prompts/review-authority-boundaries.prompt.md",
+    ".github/prompts/implement-combat-command.prompt.md",
+    ".github/prompts/release-gate.prompt.md",
+    ".github/agents/domain-guardian.agent.md",
+    ".github/agents/frontend-reconciler.agent.md",
+    ".github/agents/accessibility-reviewer.agent.md",
+    ".github/hooks/post-edit-guardrails.json",
+    "docs/ai-assurance.md",
+    "README.md"
+  ],
+  "regressionsFoundDuringValidation": [
+    "Math.random() in a newly added scene file tripped architecture-check.py; replaced with a deterministic hash before merge.",
+    "A redundant white-space: nowrap in a CSS module tripped accessibility-check.py's text-spacing guardrail; removed rather than exempted."
+  ],
+  "executedValidation": [
+    "python tools/architecture-check.py",
+    "python tools/accessibility-check.py",
+    "python tools/ui-quality-check.py"
+  ],
+  "note": "Unlike the earlier illustrative implement-resistance.json in this same directory, this run record reflects an actual task executed and validated in this session, not a constructed example."
+}

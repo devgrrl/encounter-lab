@@ -1,0 +1,12 @@
+{
+  "name": "combat-domain-authority",
+  "deterministicChecks": [
+    "domain unit tests pass",
+    "API integration tests pass",
+    "frontend contains no authoritative damage formula",
+    "GraphQL mutation inputs contain no resulting HP or adjusted damage",
+    "duplicate command returns the original result",
+    "stale version is rejected"
+  ],
+  "llmJudgeMayOverrideFailure": false
+}

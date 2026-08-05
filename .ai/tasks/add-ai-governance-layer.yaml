@@ -1,0 +1,26 @@
+id: add-ai-governance-layer-001
+objective: >
+  Add VS Code/Copilot/Claude-compatible instructions, prompt files, custom
+  agents, an optional post-edit hook description, and an AI-assurance doc,
+  without changing runtime behavior.
+scope:
+  allow:
+    - AGENTS.md
+    - .github/**
+    - docs/ai-assurance.md
+    - README.md
+  deny:
+    - src/EncounterLab.Web/src/scene/**
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+acceptance:
+  - deterministic guardrails (tools/architecture-check.py, accessibility-check.py, ui-quality-check.py) still pass unmodified
+  - no new runtime dependency added
+  - docs/ai-assurance.md makes no claim not independently verified against the actual repo state
+validation:
+  - python tools/architecture-check.py
+  - python tools/accessibility-check.py
+  - python tools/ui-quality-check.py
+risk: low
+approval:
+  before_merge: human

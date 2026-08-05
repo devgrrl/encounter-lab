@@ -1,0 +1,35 @@
+REAL GUARDRAIL CATCH — 2026-08-04, this session
+
+This is not a constructed example. This is the actual diff of code I (Claude
+Sonnet 5, this session) generated for the lightning-bolt damage effect,
+which `python tools/architecture-check.py` actually failed against, with
+the actual fix that followed. Command run:
+
+    $ python tools/architecture-check.py
+    Targeted client-authority guardrail failed:
+    - src/EncounterLab.Web/src/scene/DamageEffects.tsx: Combat randomness belongs on the server.
+
+--- a/src/EncounterLab.Web/src/scene/DamageEffects.tsx
++++ b/src/EncounterLab.Web/src/scene/DamageEffects.tsx
+@@
+-      const jitter = index === 0 || index === segmentCount ? 0 : (Math.random() - .5) * .55;
+-      base.y += jitter;
+-      base.x += (Math.random() - .5) * .25;
++      const jitter = index === 0 || index === segmentCount ? 0 : (deterministicJitter(index, 1) - .5) * .55;
++      base.y += jitter;
++      base.x += (deterministicJitter(index, 2) - .5) * .25;
+
+Context this patch is missing on purpose, the same as the original
+illustrative example in this directory: this `Math.random()` call was
+cosmetic only (jaggedness of a lightning-bolt visual, not a combat outcome)
+and never touched HP, damage, or dice values. The guardrail does not
+distinguish cosmetic randomness from combat-outcome randomness — it is a
+blanket rule — and the fix was to respect the blanket rule rather than
+argue the guardrail should special-case this call site. Replaced with a
+deterministic pseudo-random hash (`deterministicJitter`, seeded by index)
+already used elsewhere in the same file for shard-burst directions.
+
+Re-run after the fix:
+
+    $ python tools/architecture-check.py
+    Targeted client-authority guardrail passed: no known client-side combat-authority patterns were found.

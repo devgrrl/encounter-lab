@@ -1,0 +1,68 @@
+REAL BUG — CAUGHT BY THE OPERATOR TESTING LIVE, NOT BY A GUARDRAIL — 2026-08-05
+
+Not a constructed example, and not a case where a deterministic script caught
+this before it shipped — it didn't. `tools/accessibility-check.py` has no
+check at all for "every animated scene component reads the paused/reduced-
+motion prop." That's a real, currently-unfilled gap in this project's static
+checks, being written down here rather than left implicit.
+
+What happened: the Sparks/SmokeWisps/CharredPit components added earlier
+this session for the Ash Warden's fire pit each run their own useFrame loop
+keyed off clock.getElapsedTime(), but none of them accepted or checked a
+paused prop — they kept animating regardless of the header's Pause
+animations control or the reduced-motion preference. This is exactly the
+failure mode `.claude/agents/accessibility-reviewer.md` and
+`.github/agents/accessibility-reviewer.agent.md` both list explicitly
+("check the effect is wired to reducedMotion/paused, not just present in
+the UI") — but that subagent is opt-in and wasn't invoked before this code
+shipped, so nothing caught it until the operator noticed live.
+
+--- a/src/EncounterLab.Web/src/scene/EncounterScene.tsx
++++ b/src/EncounterLab.Web/src/scene/EncounterScene.tsx
+@@
+-function Sparks() {
++function Sparks({ paused }: { paused: boolean }) {
+   ...
+   useFrame(({ clock }) => {
++    if (paused) return;
+     const attribute = pointsRef.current?.geometry.attributes.position...
+@@
+-function SmokeWisps() {
++function SmokeWisps({ paused }: { paused: boolean }) {
+   ...
+   useFrame(({ clock }) => {
++    if (paused) return;
+     const time = clock.getElapsedTime();
+@@
+-function CharredPit() {
++function CharredPit({ paused }: { paused: boolean }) {
+   ...
+   useFrame(({ clock }) => {
+-    if (!rim.current) return;
++    if (paused || !rim.current) return;
+@@
+-      <CharredPit />
+-      <Sparks />
+-      <SmokeWisps />
++      <CharredPit paused={paused} />
++      <Sparks paused={paused} />
++      <SmokeWisps paused={paused} />
+
+`paused` here is the same prop EnemyModel already receives and BrivModel/
+CombatEffect already use — the fix is only that these three new components
+weren't wired into it, not that the source of truth was missing.
+
+Re-run after the fix:
+
+    $ python tools/architecture-check.py
+    Targeted client-authority guardrail passed
+    $ python tools/accessibility-check.py
+    Accessibility static checks passed (WCAG 2.2 AA source guardrails).
+    $ python tools/ui-quality-check.py
+    Compact product UI checks passed.
+
+Note what that second command does NOT prove: accessibility-check.py passing
+does not mean this specific bug is now guarded against for the *next* new
+scene effect someone adds — there is still no automated check for this class
+of regression. See professionalize-governance-and-history or a future task
+if that check is worth writing; it wasn't attempted here.

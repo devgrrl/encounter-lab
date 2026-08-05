@@ -1,0 +1,26 @@
+id: death-resurrection-sequence-001
+objective: >
+  At 0 current HP, replace Briv's model with a 3D skull-and-gravestone
+  presentation. When HP rises above 0 again (healing after "death"), play a
+  resurrection light-spiral transition: gravestone/skull fades into a ghost,
+  then into Briv. Iterate on all existing damage-type VFX alongside this for
+  consistent, high-end commercial polish.
+scope:
+  allow:
+    - src/EncounterLab.Web/public/models/**
+    - src/EncounterLab.Web/src/scene/**
+    - THIRD_PARTY_ASSETS.md
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+    - src/EncounterLab.Api/**
+acceptance:
+  - the death/resurrection state is driven entirely by the server-committed currentHitPoints value already in CharacterStateProjection; no new client-side HP logic
+  - any new CC0 asset has its source, pinned revision, and license recorded in THIRD_PARTY_ASSETS.md before use, matching the existing Knight/Barbarian precedent
+  - the transition and all 13 damage-type effects are visually reviewed and iterated on, not shipped on first pass
+validation:
+  - headless-browser screenshot review at each stage of the death -> ghost -> resurrection sequence
+  - confirm zero non-localhost network requests (offline requirement) after adding any new asset
+risk: medium
+approval:
+  before_merge: human

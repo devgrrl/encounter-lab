@@ -1,0 +1,43 @@
+{
+  "taskId": "professionalize-governance-and-history-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-05",
+  "methodology": "Extracted 16 zip files from ~/Downloads (unzip, POSIX paths), ordered by file mtime, ran diff -rq between every consecutive pair. Read the snapshots' own FIXES_V10.md/FIXES_V11.md changelog claims (specifically 'Added d2 support' and 'Replaced numeric result tiles with procedural 3D dice') and independently confirmed both against the actual DiceExpression.cs/RenderedDice.tsx diffs rather than trusting the changelog text on its own, consistent with this project's existing memory note that these changelogs made claims the code didn't always match.",
+  "acceptedFiles": [
+    "docs/history.md (new)",
+    "docs/ai-assurance.md (rewritten)",
+    "docs/agentic-engineering.md (deleted - superseded by docs/ai-assurance.md and .ai/README.md)",
+    ".ai/README.md (new)",
+    ".claude/agents/domain-guardian.md (new)",
+    ".claude/agents/frontend-reconciler.md (new)",
+    ".claude/agents/accessibility-reviewer.md (new)",
+    ".claude/commands/implement-combat-command.md (new)",
+    ".claude/commands/release-gate.md (new)",
+    ".claude/commands/review-authority-boundaries.md (new)",
+    ".claude/settings.json (new)",
+    ".claude/README.md (new)",
+    "AGENTS.md (fixed dangling docs/exec-plans/active/ reference)",
+    "README.md (updated AI-assisted engineering section and doc cross-links)",
+    ".gitignore (narrowed .claude/ to .claude/settings.local.json)",
+    "tools/package.py (narrowed .claude directory exclusion to a settings.local.json filename exclusion)"
+  ],
+  "realFindingsFromHistoryReconstruction": [
+    "The d2-dice-support claim in FIXES_V11.md was real at the time (verified: DiceExpression.cs's AllowedSides gained 2), but got fully reverted (both d2 support and the RenderedDice.tsx/PhysicalDiceTray.tsx presentation attempts) in an untracked session between the last available zip (2026-08-01 01:46) and this session's actual starting state - proven by this session's starting DiceExpression.cs having no d2 support while simultaneously containing dead code from both abandoned presentation attempts at once, a combination no single archived zip matches.",
+    "A 2026-07-31 03:19 self-review pass (REVIEW_FINDINGS.md, extracted from the reviewed-candidate-v2 zip, not present in the live repo) recorded correcting an earlier run artifact that had falsely claimed unexecuted tests passed - the same failure mode this session's own .ai/ folder went through and had to correct after the operator caught it."
+  ],
+  "regressionsFoundAndFixedDuringThisPass": [
+    "AGENTS.md's 'Read first' list pointed at docs/exec-plans/active/, which an earlier step in this same session had deleted as stale cruft - fixed to point at docs/history.md instead.",
+    "docs/ai-assurance.md described .ai/tasks/implement-resistance.yaml as 'the one task artifact in the repo' and the client-authoritative-damage.patch as 'one concrete rejected suggestion' - both true when originally written, both false by the time this pass started (10 task/run pairs, 3 rejected patches existed). Rewritten to reference .ai/README.md as the index instead of enumerating specifics that will go stale again.",
+    "An earlier step in this same session added a blanket '.claude/' exclusion to both .gitignore and tools/package.py's EXCLUDED_DIRECTORIES to remove personal settings.local.json - this would have silently stripped the new, real .claude/agents/, .claude/commands/, and .claude/settings.json out of any future submission zip too. Narrowed both to target settings.local.json by name instead of the whole directory."
+  ],
+  "executedValidation": [
+    "diff -rq between all 16 extracted archive pairs (two initial pairs re-run after discovering the first diff compared differently-named top-level folders and produced no real signal)",
+    "grep sweep for 'agentic-engineering' and 'docs/exec-plans' across the whole repo after deletion: only found in this task's own .ai records, which is expected (they document the deletion, not reference a live path)",
+    "python -m json.tool equivalent validation on all 10 .ai/runs/*.json files and .claude/settings.json: all valid",
+    "python ast.parse syntax check on tools/package.py: valid",
+    "python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py: all passed"
+  ],
+  "explicitlyNotDone": "Did not run tools/validate.ps1 or tools/package.ps1 for the same live-dev-server-port-conflict reason as the prior reviewer-facing-cleanup-001 run. The extracted zip snapshots in the scratchpad directory were left in place (session-scoped temp storage, not part of the repository) rather than cleaned up, in case follow-up questions about the history need them again."
+}

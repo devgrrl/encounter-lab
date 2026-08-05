@@ -1,0 +1,24 @@
+{
+  "taskId": "fix-scene-ui-bugs-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-04",
+  "acceptedFiles": [
+    "src/EncounterLab.Web/src/scene/EncounterScene.tsx",
+    "src/EncounterLab.Web/src/scene/EncounterScene.module.css",
+    "src/EncounterLab.Web/src/components/ConnectionBadge.tsx",
+    "src/EncounterLab.Web/src/components/ConnectionBadge.module.css",
+    "src/EncounterLab.Web/src/App.tsx"
+  ],
+  "rootCauses": [
+    "nameplate letters wrapped because drei's <Html> wrapper sizes its child to a narrow auto width with no white-space override",
+    "Briv's model simply never had a nameplate element added, unlike the enemy's",
+    "ConnectionBadge had no awareness of reducedMotion at all"
+  ],
+  "executedValidation": [
+    "headless-browser screenshot before/after for both nameplates",
+    "headless-browser pause/resume toggle screenshot showing PAUSED vs LIVE",
+    "python tools/accessibility-check.py"
+  ]
+}

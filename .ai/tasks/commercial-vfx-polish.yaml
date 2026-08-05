@@ -1,0 +1,29 @@
+id: commercial-vfx-polish-001
+objective: >
+  Finish the "commercial polish" pass on the 13 damage-type VFX in
+  DamageEffects.tsx that death-resurrection-sequence-001 explicitly deferred.
+  User direction: slashing should read as an actual slash swipe, fire should
+  be a fireball with a real tail, cold should read as genuinely icy, and the
+  rest should get a consistent professional pass (native three.js particle
+  techniques, additive blending for energy effects) rather than a uniform
+  treatment applied blindly to every type regardless of what it represents.
+scope:
+  allow:
+    - src/EncounterLab.Web/src/scene/DamageEffects.tsx
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+acceptance:
+  - SLASHING reads as a directional swipe (bright leading edge ahead of a dimmer trailing wake) with sparks flying tangent to the swing, not a shape fading in place
+  - FIRE's projectile phase is a distinct fireball with orbiting flame tongues and a real multi-segment tail, not the same generic glowing-orb approach every other type shares
+  - COLD uses a genuinely crystalline shape (not a plain box) with physically-based transmission/ior/clearcoat, plus a frost mist particle burst at the shatter moment
+  - every new/changed glow-type material uses deterministic motion only (no Math.random), consistent with architecture-check.py
+  - additive blending is applied where it represents actual light/energy (shockwaves, bolts, beams, warps, force shards) and deliberately not applied to physical/solid materials (droplets, gas puffs, debris) where it would look wrong
+  - no regression in the other 10 types' basic silhouette/timing
+validation:
+  - npx tsc --noEmit -p tsconfig.app.json
+  - python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py
+  - live headless-browser spot check triggering the three explicitly-named types
+risk: low
+approval:
+  before_merge: human

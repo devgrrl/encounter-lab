@@ -1,0 +1,25 @@
+{
+  "taskId": "repository-hygiene-cleanup-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-04",
+  "acceptedFiles": [
+    "LICENSE",
+    "EVAL_LICENSE_ADDENDUM.md"
+  ],
+  "deletedFiles": [
+    "FIXES_V5.md", "FIXES_V6.md", "FIXES_V7.md", "FIXES_V8.md", "FIXES_V9.md",
+    "FIXES_V10.md", "FIXES_V11.md", "RELEASE_NOTES_PHYSICAL_DICE.md", "V9_CORRECTIVE_PATCH.md",
+    "src/EncounterLab.Web/src/components/RenderedDice.tsx",
+    "src/EncounterLab.Web/src/components/PhysicalDiceTray.tsx",
+    "src/EncounterLab.Web/src/components/diceGeometry.ts",
+    "src/EncounterLab.Web/src/components/diceGeometry.test.ts"
+  ],
+  "reasonForDeletion": "The FIXES_V*/RELEASE_NOTES/V9_CORRECTIVE_PATCH docs described features (3D procedural dice, d2 support, GraphQL error-text surfacing) that were verified against the actual source to never have been implemented, across multiple independent checks earlier in this session. The RenderedDice/PhysicalDiceTray/diceGeometry files implemented exactly the unwired 3D-dice direction those docs described; grep confirmed zero imports of them from anywhere except each other before deletion.",
+  "executedValidation": [
+    "grep across src/EncounterLab.Web/src for RenderedDice|PhysicalDiceTray|diceGeometry before deletion: only self-references found",
+    "grep across all *.md for FIXES_V|RELEASE_NOTES_PHYSICAL_DICE|V9_CORRECTIVE_PATCH|RenderedDice|PhysicalDiceTray|diceGeometry|jsdelivr after deletion: no matches outside node_modules",
+    "npm run typecheck (both app and test tsconfig) after deletion: exit 0"
+  ]
+}

@@ -1,0 +1,23 @@
+id: add-reduced-motion-guardrail-001
+objective: >
+  Close the gap found while fixing the unpaused Ash Warden fire effects:
+  accessibility-check.py had no automated check that a continuously
+  animating scene component actually respects the paused/reduced-motion
+  prop, so this exact bug class had no guardrail against a recurrence.
+scope:
+  allow:
+    - tools/accessibility-check.py
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+acceptance:
+  - the check scans every top-level function in EncounterScene.tsx, DamageEffects.tsx, and DeathResurrection.tsx
+  - any function calling useFrame(...) without referencing paused anywhere in its body fails the check by name
+  - verified to actually fail on a deliberately reintroduced instance of the real bug, not just pass on already-correct code
+  - no false positive on components in these files that don't need pausing (none currently exist in scope; camera controls live in a separate file and are outside this check's scope for that reason)
+validation:
+  - python tools/accessibility-check.py (pass on current code)
+  - deliberately strip one paused check, confirm the tool fails by naming the exact component, then restore
+risk: low
+approval:
+  before_merge: human

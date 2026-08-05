@@ -1,0 +1,24 @@
+id: fix-scene-ui-bugs-001
+objective: >
+  Fix four user-reported UI bugs: the enemy nameplate rendering as vertical
+  letters, Briv having no in-scene name label, no in-scene HP bar for either
+  character, and the header's LIVE indicator not reflecting the pause state.
+scope:
+  allow:
+    - src/EncounterLab.Web/src/scene/**
+    - src/EncounterLab.Web/src/components/ConnectionBadge.tsx
+    - src/EncounterLab.Web/src/components/ConnectionBadge.module.css
+    - src/EncounterLab.Web/src/App.tsx
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+acceptance:
+  - both nameplates render horizontally
+  - Briv's in-scene HP bar reflects real server-committed HP; Ash Warden's is explicitly decorative (no backend HP concept exists for it) per user direction
+  - the header pill shows PAUSED distinctly from LIVE/CONNECTING/RECONNECTING/OFFLINE, verified via accessible name, not just color
+validation:
+  - headless-browser screenshot verification of both nameplates and the paused/live pill states
+  - python tools/accessibility-check.py
+risk: low
+approval:
+  before_merge: human

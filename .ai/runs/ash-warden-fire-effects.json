@@ -1,0 +1,31 @@
+{
+  "taskId": "ash-warden-fire-effects-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-05",
+  "acceptedFiles": [
+    "src/EncounterLab.Web/public/models/SkeletonWarrior.glb (new)",
+    "src/EncounterLab.Web/public/models/Barbarian.glb (deleted, no longer used)",
+    "src/EncounterLab.Web/src/scene/EncounterScene.tsx",
+    "THIRD_PARTY_ASSETS.md"
+  ],
+  "sourcingHistory": "User asked whether a plain barbarian model under the name 'Ash Warden' would read as a mismatch to D&D-literate reviewers. Checked the actual pinned KayKit-Character-Pack-Adventures-1.0 tree via GitHub API: only 5 characters exist (Barbarian, Knight, Mage, Rogue, Rogue_Hooded), no demon/elemental option. Proposed a skeleton reskin as a cheaper alternative; user explicitly rejected that in favor of sourcing a real demon/elemental model ('an ash warden is a fire demon dont be lazy'). Searched KayKit's other 9 published packs (all GitHub-mirrored, none had a demon), then Quaternius and Poly Pizza (real CC0 sources, but distributed via itch.io's JS-gated download flow, not a plain file URL) - user then explicitly redirected: 'stop. just use the skeleton, and give it a 3d fire ring and ash cloud and sword and helmet', accepting the skeleton after confirming no simply-downloadable demon model exists.",
+  "iterationHistory": [
+    "v1: skeleton model wired in with a uniform glowColor/.32 emissiveIntensity tint plus a flat single-ring ground effect and basic sphere 'ash cloud'. User screenshot showed the whole model washed pink and called it amateur.",
+    "v2: root-caused the pink wash to the flat emissive tint reading much stronger against the skeleton's near-white bone material than it had against Knight's gray armor; dropped intensity .32 -> .09, added layered flame cones + a real THREE.Points spark system + upgraded rising smoke + a charred ground pit with concentric glow rings instead of one hard ring.",
+    "v3: user - 'way more particles'. Flames 6->16, sparks 36->220, smoke wisps 5->14, widened spread radii.",
+    "v4: user - 'lose the spikes'. The 16 cone-shaped flames read as sharp triangular spikes rather than flickering flames; replaced coneGeometry with stretched sphereGeometry (rounded blobs, no hard point).",
+    "v5: user - 'no flames, just sparks'. Removed FlameLicks entirely (component deleted, not just unrendered) - final presentation is the charred pit + sparks + smoke only.",
+    "v6: user - 'the new fire animations did not respect the pause button or low motion button'. Confirmed by reading the code: Sparks/SmokeWisps/CharredPit each ran their own useFrame loop with no paused prop at all. Not caught by any static check at the time - accessibility-check.py had no rule for 'every animated scene component reads paused'. Added the prop and an early-return to all three, wired from the same paused value BrivModel/CombatEffect already use. Full diff and honest gap statement: .ai/rejected/unpaused-scene-effects-2026-08-05.patch. The gap itself was closed separately: see add-reduced-motion-guardrail-001.",
+    "v7 (sword grip, root-caused and fixed): the sword was invisible in every prior screenshot. Added temporary console.log debugging (removed before this run was marked complete) to attachWeapon() and confirmed via actual runtime output, not another guess: root.getObjectByName('handslot.r') returned undefined on the loaded skeleton, even though the raw glTF JSON (checked earlier via a Python struct/JSON dump of the GLB's binary chunk) does contain a node literally named 'handslot.r'. Dumping every node name on the loaded scene showed why: 'upperarml', 'lowerarml', 'wristl', 'handl', 'handslotl' (and the .r equivalents) - Three.js's GLTFLoader strips '.' from skinned-mesh joint names when constructing THREE.Bone objects, because '.' is the reserved property-path separator for animation clip targeting (e.g. 'bonename.position'). Fixed weaponBoneName from 'handslot.r' to 'handslotr' and confirmed via a fresh screenshot that the sword is now visibly gripped in the correct hand."
+  ],
+  "executedValidation": [
+    "npx tsc --noEmit -p tsconfig.app.json: clean after every iteration above",
+    "python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py: all passed after the final pause-wiring fix",
+    "headless-browser screenshots taken and visually reviewed after v1, v3, v4, v5 (v2 and v6 verified by code re-read rather than a fresh screenshot, given explicit operator efficiency feedback earlier in the same session)"
+  ],
+  "notYetDone": [
+    "'iterate on all 13 damage-type VFX for commercial polish' remains out of scope for this run - it is tracked under death-resurrection-sequence-001 and was not attempted here beyond the one correctness bug (NECROTIC's missing initial visible={false}) fixed in the reviewer-facing-cleanup-001 run."
+  ]
+}

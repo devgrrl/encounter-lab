@@ -1,0 +1,40 @@
+REJECTED ARTIFACT FOR TASK implement-resistance-001 — DO NOT APPLY
+
+This is the rejectedArtifact named explicitly in .ai/runs/implement-resistance.json
+("rejectedArtifact": ".ai/rejected/client-authoritative-damage.patch"), which
+is the real run record for .ai/tasks/implement-resistance.yaml (objective:
+"Implement slashing resistance in the authoritative C# domain"). Both files
+predate this session: their on-disk timestamps (5:37 PM, 2026-08-04) are
+hours earlier than the first file this session wrote (10:46 PM, 2026-08-04),
+and this repository ships with no git history to check beyond that — I am
+reporting what the filesystem and the run record actually show, not asserting
+authorship I can't verify. The run record itself is honest about its own
+gap: provider and model are both recorded as "not recorded." I don't know,
+and won't claim to know, which tool produced this diff.
+
+What the run record does establish: the accepted implementation kept
+slashing-resistance halving in src/EncounterLab.Domain/Combat/HitPointPool.cs
+(server-side), and this patch — a client-side `adjustedDamage` computed in
+graphql.ts and submitted to the server — was the alternative that got turned
+down, per combat-domain-eval.json's deterministic check "frontend contains no
+authoritative damage formula." That rule is still enforced today by
+tools/architecture-check.py, which is why this stays in /rejected as a
+concrete negative example rather than deleted.
+
+For a rejection I generated and validated myself, in this session, with a
+command transcript, see nondeterministic-client-randomness-2026-08-04.patch
+in this same directory.
+
+--- a/src/EncounterLab.Web/src/api/graphql.ts
++++ b/src/EncounterLab.Web/src/api/graphql.ts
+@@
+-export async function applyDamage(amount: number, damageType: DamageType) {
++export async function applyDamage(amount: number, damageType: DamageType) {
++  const adjustedDamage = damageType === 'SLASHING' ? Math.floor(amount / 2) : amount;
+   return request(APPLY_DAMAGE, {
+-    input: { amount, damageType }
++    input: { amount, damageType, adjustedDamage }
+   });
+ }
+
+Rejected because the client would own a domain rule and could forge the adjusted value.

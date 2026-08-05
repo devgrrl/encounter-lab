@@ -1,0 +1,33 @@
+id: clear-temporary-hit-points-001
+objective: >
+  Add a way to explicitly zero out temporary HP. The existing
+  higher-value-wins rule means submitting 0 through the normal "set temporary
+  HP" flow was already technically possible but silently did nothing once
+  temporary HP was already above zero — making a bug report inevitable rather
+  than a real fix.
+scope:
+  allow:
+    - src/EncounterLab.Domain/Combat/HitPointPool.cs
+    - src/EncounterLab.Domain/Combat/CharacterState.cs
+    - tests/EncounterLab.Domain.Tests/**
+    - src/EncounterLab.Web/src/components/ActionPanel.tsx
+    - src/EncounterLab.Web/src/components/ActionPanel.module.css
+    - src/EncounterLab.Web/src/App.tsx
+    - src/EncounterLab.Web/src/components/ActionPanel.test.tsx
+    - src/EncounterLab.Web/src/App.test.tsx
+    - docs/domain-invariants.md
+  deny:
+    - src/EncounterLab.Api/**  # no new mutation needed; reuses SetTemporaryHitPoints(0)
+acceptance:
+  - a request of exactly 0 unconditionally clears temporary HP in the domain layer, regardless of the current value
+  - any positive request still only replaces a lower existing value (unchanged behavior)
+  - the committed-event summary text is accurate for the clear case, not the old "kept N because existing was higher" text
+  - the browser does not gain a new client-side HP calculation; it reuses the existing SetTemporaryHitPoints command with amount=0
+  - domain-invariants.md documents the new rule explicitly
+validation:
+  - dotnet test (EncounterLab.Domain.Tests)
+  - npx vitest run --coverage (frontend back to 100% stmts/funcs/lines)
+  - python tools/architecture-check.py
+risk: low
+approval:
+  before_merge: human

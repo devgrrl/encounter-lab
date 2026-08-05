@@ -1,0 +1,26 @@
+id: action-panel-icon-cleanup-001
+objective: >
+  Fix a CSS specificity bug where the Clear button's text wrapped mid-word
+  ("Clea" / "r") under a narrower panel width, then replace all ActionPanel
+  button text labels with hand-written inline SVG icons per user direction,
+  keeping each button's accessible name unchanged via visually-hidden text.
+scope:
+  allow:
+    - src/EncounterLab.Web/src/components/ActionPanel.tsx
+    - src/EncounterLab.Web/src/components/ActionPanel.module.css
+    - src/EncounterLab.Web/src/components/icons.tsx
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+acceptance:
+  - the Clear button never wraps its label regardless of panel width
+  - every ActionPanel button keeps the exact same accessible name it had before (Reset, Damage, Heal, Temp HP, Clear), verified via getByRole(button, {name}) in the existing test file, unmodified
+  - icons are hand-written inline SVG, not a new icon-library dependency
+validation:
+  - npx vitest run src/components/ActionPanel.test.tsx
+  - npm run typecheck
+  - python tools/accessibility-check.py
+  - python tools/ui-quality-check.py
+risk: low
+approval:
+  before_merge: human

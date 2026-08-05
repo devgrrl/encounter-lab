@@ -1,0 +1,24 @@
+{
+  "taskId": "implement-resistance-001",
+  "status": "source-reviewed-local-validation-required",
+  "provider": "not recorded",
+  "model": "not recorded",
+  "usage": "not available",
+  "acceptedFiles": [
+    "src/EncounterLab.Domain/Combat/HitPointPool.cs",
+    "tests/EncounterLab.Domain.Tests/HitPointPoolTests.cs"
+  ],
+  "rejectedArtifact": ".ai/rejected/client-authoritative-damage.patch",
+  "correction": "Kept defense application in the C# domain boundary rather than the browser.",
+  "executedValidation": [
+    "architecture guardrail",
+    "static source review"
+  ],
+  "requiredLocalValidation": [
+    "dotnet build and tests",
+    "frontend typecheck and unit tests",
+    "Playwright two-browser test",
+    "Docker build and manual demonstration"
+  ],
+  "note": "This provenance artifact is not release evidence. The validation and packaging scripts are the release authority."
+}

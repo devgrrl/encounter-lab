@@ -1,0 +1,36 @@
+id: professionalize-governance-and-history-001
+objective: >
+  Reconstruct this codebase's real pre-session history by diffing archived
+  zip snapshots found outside the repo, then make .ai/, .claude/, .github/,
+  and docs/ reviewer-facing and internally consistent: no dangling
+  references, no redundant/contradictory docs, and Claude Code given
+  equivalent tooling to what .github/ already gives Copilot.
+scope:
+  allow:
+    - docs/**
+    - .ai/README.md
+    - .ai/tasks/**
+    - .ai/runs/**
+    - .claude/**
+    - AGENTS.md
+    - README.md
+    - .gitignore
+    - tools/package.py
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+    - src/EncounterLab.Web/src/scene/**
+acceptance:
+  - every historical claim in docs/history.md is backed by an actual diff between two real archived snapshots, not by those snapshots' own (known-unreliable) changelog docs
+  - no doc references a file or directory that was deleted earlier in this session
+  - no two docs describe the same thing with contradictory or stale specifics
+  - .claude/ gives Claude Code users the same review agents and workflows .github/ gives Copilot users, in Claude Code's native formats
+  - the earlier over-broad .claude/ and MANIFEST.sha256 exclusions added to .gitignore/tools/package.py are narrowed so they don't also strip the new, real .claude/ content
+validation:
+  - diff -rq between each pair of extracted archive snapshots, cross-checked against what each snapshot's own changelog doc claimed
+  - grep sweep for dangling references (docs/exec-plans, docs/agentic-engineering) after each deletion
+  - python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py
+  - JSON/Python syntax validation on every new/edited .ai run record and tools/package.py
+risk: low
+approval:
+  before_merge: human

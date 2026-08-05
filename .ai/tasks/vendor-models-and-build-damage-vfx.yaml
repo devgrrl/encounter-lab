@@ -1,0 +1,26 @@
+id: vendor-models-and-build-damage-vfx-001
+objective: >
+  Remove the runtime jsDelivr CDN dependency for character models (vendor
+  the two GLB files locally so the app works with no internet access), and
+  replace the single generic damage-impact effect with a distinct visual
+  profile per damage type.
+scope:
+  allow:
+    - src/EncounterLab.Web/public/models/**
+    - src/EncounterLab.Web/src/scene/**
+    - THIRD_PARTY_ASSETS.md
+    - README.md
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+    - src/EncounterLab.Api/**
+acceptance:
+  - zero non-localhost network requests at runtime (verified with a headless browser network trace)
+  - each of the 13 DamageType values renders a visually distinct impact profile
+  - the flat/numeric dice tiles are left untouched (explicit user preference; the unused 3D dice components were deleted, not wired in)
+validation:
+  - manual headless-browser network trace during a full damage-type sweep
+  - npm run test (frontend suite, once coverage work below added scene-adjacent unit tests)
+risk: medium
+approval:
+  before_merge: human

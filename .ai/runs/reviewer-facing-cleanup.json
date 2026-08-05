@@ -1,0 +1,31 @@
+{
+  "taskId": "reviewer-facing-cleanup-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-05",
+  "deletedPaths": [
+    ".claude/settings.local.json (and the now-empty .claude/ directory)",
+    "docs/exec-plans/active/001-encounter-lab.md",
+    "MANIFEST.sha256",
+    "src/EncounterLab.Web/coverage/"
+  ],
+  "reasonForEachDeletion": {
+    ".claude/settings.local.json": "Machine-local Claude Code tool permissions, not source or documentation. Not excluded by tools/package.py's staging copy, so it would have shipped in a submission zip.",
+    "docs/exec-plans/active/001-encounter-lab.md": "Pre-session internal planning artifact whose status line ('full local restore, runtime, and browser validation required before submission') was stale and contradicted by the actual state: full validation (dotnet test, vitest coverage, all three guardrails, live browser testing) has since been run and passed repeatedly this session.",
+    "MANIFEST.sha256": "Dated from before this session (2026-07-31); no longer matches current file hashes at all. README/VALIDATION.md/RUN_LOCALLY.md already document that tools/package.py regenerates this file fresh and explicitly excludes any pre-existing copy by name when staging a submission - the root-level file was dead weight, not the authoritative artifact.",
+    "src/EncounterLab.Web/coverage/": "Generated vitest HTML coverage report (includes its own favicon/sprite images) from this session's own `vitest run --coverage` runs. Regenerable, already covered by .gitignore's coverage/** rule and tools/package.py's EXCLUDED_DIRECTORIES, so removing it changes nothing about what actually ships - just removes noise from the working tree."
+  },
+  "hardeningChange": "Added '.claude' to tools/package.py's EXCLUDED_DIRECTORIES and to .gitignore, alongside the existing .git/.idea/.vs/.vscode entries, so a future work session recreating .claude/ locally cannot silently end up in a packaged submission.",
+  "realBugFoundAndFixed": "src/EncounterLab.Web/src/scene/DamageEffects.tsx: the NECROTIC damage effect's 'pulse' sphere mesh was the only effect part across all 13 damage types missing an initial visible={false} prop. Every other part is hidden until useFrame's impact-phase switch statement explicitly shows it; this one defaulted to Three.js's visible=true, so a glowing purple sphere (opacity .28, radius .7) was visible at the target from component mount through the entire ~0.5s approach phase, before the intended impact animation window even began. One-line fix: added visible={false} to that mesh's JSX.",
+  "notReviewed": "This was a targeted correctness pass (looking for the same class of bug across all 13 switch cases and JSX blocks), not a subjective art/timing rewrite of the existing damage-type effects. The broader 'iterate on all 13 damage-type VFX for commercial polish' acceptance criterion from death-resurrection-sequence-001 is satisfied for the one concrete defect found; a full aesthetic pass (fade-outs instead of abrupt visible-toggles, timing curve adjustments, etc.) was not attempted and would need to be scoped as its own task if wanted.",
+  "executedValidation": [
+    "npx tsc --noEmit -p tsconfig.app.json: clean",
+    "python tools/architecture-check.py: passed",
+    "python tools/accessibility-check.py: passed",
+    "python tools/ui-quality-check.py: passed",
+    "grep across docs/*.md and README.md for stale terms (jsdelivr, RenderedDice, PhysicalDiceTray, FIXES_V, MIT License, d2 support) before deciding the remaining six docs/ files needed no changes: no matches",
+    "find sweep across the repo (excluding node_modules/bin/obj) for .bak/.orig/.tmp/~/.log/Thumbs.db/.DS_Store: no matches"
+  ],
+  "explicitlyNotDone": "Did not run tools/validate.ps1 or tools/package.ps1 (the scripts that would produce the actual submission zip). validate.ps1 runs `npm ci`, which deletes and reinstalls node_modules, and package.ps1 additionally runs Playwright e2e tests that bind to the same ports (5000, 5173) the operator's own live dev-server session was actively using at the time. Running either would have disrupted that live session. Left for the operator to run explicitly when ready to produce the final zip."
+}

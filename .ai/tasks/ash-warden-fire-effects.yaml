@@ -1,0 +1,27 @@
+id: ash-warden-fire-effects-001
+objective: >
+  Replace the Ash Warden's plain-barbarian model/name mismatch with a
+  skeletal-undead model plus a real fire/ash/spark presentation (charred
+  ground pit, native three.js particle sparks, rising smoke), sourced from
+  an already-vetted CC0 pack rather than an emissive color tint standing in
+  for actual effects.
+scope:
+  allow:
+    - src/EncounterLab.Web/public/models/**
+    - src/EncounterLab.Web/src/scene/EncounterScene.tsx
+    - THIRD_PARTY_ASSETS.md
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+acceptance:
+  - the model/name mismatch a D&D-literate reviewer would notice is closed with a real asset, not a rename-only shortcut
+  - any new CC0 asset has its source, pinned revision, and license recorded in THIRD_PARTY_ASSETS.md before use
+  - fire/ash presentation uses no client-side randomness (deterministic hashing only, per architecture-check.py)
+  - every animated effect respects the paused/reduced-motion prop the rest of the scene already uses
+validation:
+  - headless-browser screenshot review at each iteration
+  - python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py
+  - npm run typecheck
+risk: low
+approval:
+  before_merge: human

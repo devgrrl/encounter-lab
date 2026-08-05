@@ -1,0 +1,17 @@
+{
+  "taskId": "add-reduced-motion-guardrail-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-05",
+  "acceptedFiles": [
+    "tools/accessibility-check.py"
+  ],
+  "implementation": "Added function_bodies() - a string/comment-aware brace-balance scanner (not a real TS parser) that extracts every top-level `function Name(...) { ... }` body from a source file - and unpaused_animation_components(), which flags any extracted function whose body calls useFrame( without also referencing paused. Wired into main() against EncounterScene.tsx, DamageEffects.tsx, and DeathResurrection.tsx specifically, not every .tsx file in the project, because CameraControls.tsx's useFrame legitimately should keep working while paused (the user can still look around) and lives in a separate file, so scoping to the three combat-animation files avoids that false positive without needing an explicit exemption list.",
+  "executedValidation": [
+    "python tools/accessibility-check.py: passed on the actual current (already-fixed) code",
+    "deliberately reintroduced the exact bug this check exists for (sed-stripped the 'if (paused) return;' line from Sparks in EncounterScene.tsx), re-ran the check, and confirmed it failed with the specific message naming 'EncounterScene.tsx:Sparks' - not a generic failure, the exact component - then restored the line and re-ran clean",
+    "npx tsc --noEmit -p tsconfig.app.json / python architecture-check.py / ui-quality-check.py: all still pass after this change (this is a Python-only change, no frontend source touched)"
+  ],
+  "note": "This exists because ash-warden-fire-effects-001's run record flagged it as a real, unfilled gap rather than pretending accessibility-check.py already covered this class of bug. Writing the check was the direct follow-through on that gap, not a separate idea."
+}

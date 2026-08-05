@@ -1,0 +1,26 @@
+{
+  "taskId": "action-panel-icon-cleanup-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-05",
+  "acceptedFiles": [
+    "src/EncounterLab.Web/src/components/ActionPanel.tsx",
+    "src/EncounterLab.Web/src/components/ActionPanel.module.css",
+    "src/EncounterLab.Web/src/components/icons.tsx"
+  ],
+  "rootCause": "`.row > .tempClearButton` (two class selectors) overrode `.row > button`'s min-width: 4.6rem down to 3.4rem (one class + one element selector loses on specificity). At the user's actual window width the grid's auto-sized button column shrank toward that 3.4rem floor, which was narrower than \"Clear\" needs, so the browser broke the word mid-character with no white-space:nowrap available (that CSS property is itself blocked by accessibility-check.py's text-spacing guardrail outside .srOnly).",
+  "iterationHistory": [
+    "First fix: replaced all five button text labels with icon-only SVG buttons (new src/components/icons.tsx, zero new dependency), accessible name preserved via a visually-hidden .srOnly span. Sidestepped the wrap bug entirely by removing visible text.",
+    "User tested live, sent a screenshot, and asked for labels back: 'make this 3 rows, labels are required' (referring to both the field labels, which were already present but visually hidden via .srOnly, and the buttons). Restructured the panel from [Damage row] + [Heal | Temp HP two-column split] into three full-width stacked rows, and un-hid the field-amount/type <span> labels (removed the .srOnly class - .row label's existing CSS already styled them correctly, they just weren't visible). Removed the now-dead .splitRows CSS rule.",
+    "User then clarified further: 'all buttons need text and an icon, not just an icon.' Restored visible text next to each icon (removed .srOnly from the five button label spans) and changed .row > button / .toolbar button from fixed-square icon-only sizing to a flex row (icon + gap + text). This reintroduced the original wrap risk, so min-width was raised to 5.4rem (well past any button's actual content width) instead of using white-space:nowrap, which stays blocked by the same accessibility-check.py guardrail that caught the original bug.",
+    "User reviewed the icon+text+5.4rem-min-width result live and confirmed: 'this is good... i like buttons exactly as they are right now.' No further layout change made."
+  ],
+  "finalState": "Three full-width stacked rows (Damage, Heal, Temporary HP). Every input/select has a visible label. Every button (Reset, Damage, Heal, Temp HP, Clear) shows both an icon and visible text, sized via min-width rather than white-space:nowrap so the accessibility text-spacing guardrail stays satisfied.",
+  "executedValidation": [
+    "npx vitest run src/components/ActionPanel.test.tsx: 4/4 pass at every stage of this iteration, unmodified from the pre-existing test file (getByRole name queries kept resolving correctly through icon-only, then icon+hidden-label, then icon+visible-label markup)",
+    "npx tsc --noEmit -p tsconfig.app.json: clean at final state",
+    "python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py: all passed at final state"
+  ],
+  "note": "Requested and iterated live by the user while testing the running app themselves, across several rounds of direct feedback on screenshots rather than a single upfront spec. Recorded here as the iteration actually happened, not just the final diff, since the back-and-forth is itself real signal about what this UI needed."
+}

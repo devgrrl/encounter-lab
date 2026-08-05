@@ -1,0 +1,37 @@
+{
+  "taskId": "achieve-full-test-coverage-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-04",
+  "summary": {
+    "frontendTestsBefore": 32,
+    "frontendTestsAfter": 184,
+    "frontendCoverageBefore": "31.74% stmts / 27.84% branch / 36.96% funcs / 33.28% lines",
+    "frontendCoverageAfter": "100% stmts / 98.66% branch / 100% funcs / 100% lines",
+    "backendTestsBefore": 37,
+    "backendTestsAfter": 80,
+    "backendCoverageBefore": "85.8% lines / 73.2% branch",
+    "backendCoverageAfter": "92.8% lines / 84.7% branch"
+  },
+  "preExistingBugsFoundAndFixed": [
+    "@testing-library/react auto-cleanup was never wired up (test.globals off, no manual afterEach(cleanup)); caused DOM to accumulate across tests in the same file",
+    "jsdom has no window.matchMedia; anything mounting useEncounterController crashed under test",
+    "vitest's default include pattern picked up Playwright e2e specs and tried to run them as unit tests",
+    "tsconfig.test.json's include fully replaced (did not merge with) tsconfig.app.json's include, so test files could not see the app code they imported",
+    "TreatWarningsAsErrors + xUnit1051 made the entire backend Api.Tests project fail to build",
+    "Microsoft.Data.Sqlite's connection pool held file handles past disposal, racing the test fixture's cleanup delete on Windows",
+    "a stale test label ('Type' vs the actual 'Damage type') and a duplicate-DOM query bug from the missing cleanup above"
+  ],
+  "documentedExclusions": [
+    "src/EncounterLab.Web/src/scene/EncounterScene.tsx and DamageEffects.tsx: Three.js/WebGL rendering, not meaningfully unit-testable (vitest.config.ts coverage.exclude)",
+    "~7 frontend branches with empty {start:{},end:{}} location metadata in raw v8 JSON: synthetic branches from the Babel/React-Fast-Refresh transform, not from this project's source (vitest.config.ts threshold comment)",
+    "EncounterLab.Api.Realtime.CombatHub: SignalR lifecycle hook needing a live TestServer connection to test meaningfully ([ExcludeFromCodeCoverage] with Justification)",
+    "Program.cs composition-root edges (CORS delegate, brivPath fallback, connection-string fallback) and SignalRCombatNotifier's broadcast-failure catch branches: left uncovered, not excluded, and named explicitly in the final report rather than hidden"
+  ],
+  "executedValidation": [
+    "npx vitest run --coverage (16 files, 184 tests, exit 0)",
+    "dotnet test (80 tests, exit 0)",
+    "python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py"
+  ]
+}

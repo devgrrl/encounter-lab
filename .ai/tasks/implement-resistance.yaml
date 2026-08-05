@@ -1,0 +1,19 @@
+id: implement-resistance-001
+objective: Implement slashing resistance in the authoritative C# domain
+scope:
+  allow:
+    - src/EncounterLab.Domain/**
+    - tests/EncounterLab.Domain.Tests/**
+  deny:
+    - src/EncounterLab.Web/**
+acceptance:
+  - matching damage is halved
+  - odd damage rounds down
+  - temporary HP consumes adjusted damage first
+  - the browser never submits adjusted damage
+validation:
+  - python tools/architecture-check.py
+  - dotnet test tests/EncounterLab.Domain.Tests/EncounterLab.Domain.Tests.csproj
+risk: medium
+approval:
+  before_merge: human

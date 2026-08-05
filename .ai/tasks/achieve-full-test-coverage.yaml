@@ -1,0 +1,26 @@
+id: achieve-full-test-coverage-001
+objective: >
+  Fix all pre-existing frontend test failures, then bring frontend and
+  backend test coverage as close to 100% as testable logic allows, with
+  every exclusion documented rather than silently skipped.
+scope:
+  allow:
+    - src/EncounterLab.Web/src/**/*.test.{ts,tsx}
+    - src/EncounterLab.Web/vitest.config.ts
+    - src/EncounterLab.Web/src/test/setup.ts
+    - src/EncounterLab.Web/tsconfig.test.json
+    - tests/**
+    - .editorconfig
+  deny:
+    - src/EncounterLab.Web/src/scene/**  # excluded from the coverage target, not tested
+acceptance:
+  - zero pre-existing test failures remain
+  - frontend coverage 100% statements/functions/lines; branches at the practical ceiling with any gap proven (not asserted) to be a build-tool artifact
+  - backend coverage materially improved with every remaining gap categorized (composition root, failure-injection needing a fake dependency, DB-corruption edge case) rather than hidden
+  - no coverage threshold quietly lowered without an inline comment explaining why
+validation:
+  - npx vitest run --coverage
+  - dotnet test --collect:"XPlat Code Coverage" + reportgenerator merge
+risk: low
+approval:
+  before_merge: human

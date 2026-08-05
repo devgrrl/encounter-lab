@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "status": "optional-preview",
+  "note": "Not required to run or build Encounter Lab. This file documents an intended post-edit guardrail sequence for AI-agent tooling that supports running commands after an edit. If your VS Code/Copilot/Claude Code setup does not read this file, nothing here has any effect on the project. See docs/ai-assurance.md for how this fits the AI-assurance process.",
+  "runAfterAiEdits": [
+    {
+      "id": "architecture-check",
+      "command": "python tools/architecture-check.py",
+      "purpose": "Static check that no client-authoritative combat-logic pattern was introduced under src/EncounterLab.Web."
+    },
+    {
+      "id": "accessibility-check",
+      "command": "python tools/accessibility-check.py",
+      "purpose": "Static WCAG 2.2 AA source guardrails against the frontend."
+    },
+    {
+      "id": "ui-quality-check",
+      "command": "python tools/ui-quality-check.py",
+      "purpose": "Static checks that specific compact-UI/product regressions have not reappeared."
+    }
+  ]
+}

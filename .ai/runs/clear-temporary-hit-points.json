@@ -1,0 +1,26 @@
+{
+  "taskId": "clear-temporary-hit-points-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-04",
+  "acceptedFiles": [
+    "src/EncounterLab.Domain/Combat/HitPointPool.cs",
+    "src/EncounterLab.Domain/Combat/CharacterState.cs",
+    "tests/EncounterLab.Domain.Tests/HitPointPoolTests.cs",
+    "tests/EncounterLab.Domain.Tests/CharacterStateTests.cs",
+    "src/EncounterLab.Web/src/components/ActionPanel.tsx",
+    "src/EncounterLab.Web/src/components/ActionPanel.module.css",
+    "src/EncounterLab.Web/src/App.tsx",
+    "src/EncounterLab.Web/src/components/ActionPanel.test.tsx",
+    "src/EncounterLab.Web/src/App.test.tsx",
+    "docs/domain-invariants.md"
+  ],
+  "designNote": "Considered a separate ClearTemporaryHitPoints command/mutation; rejected in favor of redefining amount=0 as an unconditional clear within the existing SetTemporaryHitPoints, since 0 was never a meaningful 'grant' under the higher-value-wins rule anyway (max(current, 0) was always a dead no-op for current > 0). Keeps the GraphQL contract, the frontend action, and the idempotency fingerprint all unchanged; only the domain method's behavior at exactly zero changed.",
+  "executedValidation": [
+    "dotnet test: 45/45 domain tests pass (2 new)",
+    "npx vitest run --coverage: 184/184 pass, 100% stmts/funcs/lines maintained",
+    "python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py: all pass",
+    "headless-browser verification: grant 10 temp HP, click Clear, confirm it reaches 0"
+  ]
+}

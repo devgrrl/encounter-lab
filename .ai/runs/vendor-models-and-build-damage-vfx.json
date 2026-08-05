@@ -1,0 +1,27 @@
+{
+  "taskId": "vendor-models-and-build-damage-vfx-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-04",
+  "acceptedFiles": [
+    "src/EncounterLab.Web/public/models/Knight.glb",
+    "src/EncounterLab.Web/public/models/Barbarian.glb",
+    "src/EncounterLab.Web/src/scene/EncounterScene.tsx",
+    "src/EncounterLab.Web/src/scene/DamageEffects.tsx",
+    "THIRD_PARTY_ASSETS.md",
+    "README.md"
+  ],
+  "assetProvenance": {
+    "source": "KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+    "pinnedRevision": "672074b73ba276876a19e8816ecdc5241817ab47",
+    "license": "CC0 1.0 Universal",
+    "fetchedVia": "the same pinned jsDelivr revision the app previously loaded at runtime, downloaded once and committed to public/models/"
+  },
+  "executedValidation": [
+    "headless-browser network trace across a reset + full 13-damage-type sweep: zero non-localhost requests, confirming offline operation",
+    "npm run typecheck",
+    "python tools/architecture-check.py"
+  ],
+  "note": "User-directed follow-up during this task explicitly rejected wiring the pre-existing but unused 3D/physical dice components (RenderedDice.tsx, PhysicalDiceTray.tsx) into the UI; those files were later deleted as dead code under a separate task (see repository-hygiene-cleanup)."
+}
