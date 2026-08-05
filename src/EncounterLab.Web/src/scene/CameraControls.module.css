@@ -1,0 +1,34 @@
+.controls {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: .48rem;
+  display: grid;
+  grid-template-columns: repeat(7, 2.5rem);
+  gap: .22rem;
+  transform: translateX(-50%);
+  padding: .24rem;
+  border: 1px solid var(--border-muted);
+  border-radius: .4rem;
+  background: rgba(3, 24, 19, .82);
+  box-shadow: inset 0 1px rgba(225, 255, 248, .1), 0 8px 24px rgba(0, 0, 0, .48);
+  backdrop-filter: blur(12px);
+}
+.controls button {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: .3rem;
+  padding: 0;
+  background: rgba(5, 42, 34, .82);
+  color: var(--ice-bright);
+  font-size: 1rem;
+  font-weight: 950;
+  cursor: pointer;
+}
+.controls button:hover { border-color: var(--ice-bright); background: rgba(18, 84, 69, .9); }
+.controls button:active { transform: translateY(1px); }
+@media (max-width: 520px) { .controls { grid-template-columns: repeat(4, 2.5rem); } .controls button:last-child { grid-column: 2 / 4; width: auto; } }
+@media (forced-colors: active) { .controls, .controls button { border-color: CanvasText; background: Canvas; color: CanvasText; } }
