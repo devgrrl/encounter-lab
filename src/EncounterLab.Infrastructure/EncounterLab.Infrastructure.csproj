@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EncounterLab.Application\EncounterLab.Application.csproj" />
+    <ProjectReference Include="..\EncounterLab.Domain\EncounterLab.Domain.csproj" />
+  </ItemGroup>
+</Project>

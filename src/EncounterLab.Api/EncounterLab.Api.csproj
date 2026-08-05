@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="HotChocolate.AspNetCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Data\briv.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EncounterLab.Application\EncounterLab.Application.csproj" />
+    <ProjectReference Include="..\EncounterLab.Domain\EncounterLab.Domain.csproj" />
+    <ProjectReference Include="..\EncounterLab.Infrastructure\EncounterLab.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

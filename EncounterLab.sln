@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncounterLab.Domain", "src\EncounterLab.Domain\EncounterLab.Domain.csproj", "{548B91EC-139F-472C-89D3-6E58A6B75338}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncounterLab.Application", "src\EncounterLab.Application\EncounterLab.Application.csproj", "{DE4C3B5F-BBD5-4E24-8705-70DF0DB90CDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncounterLab.Infrastructure", "src\EncounterLab.Infrastructure\EncounterLab.Infrastructure.csproj", "{AA65CBBC-5D1F-4C69-8DC3-8FA9BB422054}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncounterLab.Api", "src\EncounterLab.Api\EncounterLab.Api.csproj", "{75D97206-62D5-49D6-A77D-B88519410326}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncounterLab.Domain.Tests", "tests\EncounterLab.Domain.Tests\EncounterLab.Domain.Tests.csproj", "{E393D66A-8A10-494D-B5DD-A74FC3037FB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncounterLab.Api.Tests", "tests\EncounterLab.Api.Tests\EncounterLab.Api.Tests.csproj", "{442781A7-703B-4D2C-9081-F6E3E7FF742C}"
+EndProject
+Global
+  GlobalSection(SolutionConfigurationPlatforms) = preSolution
+    Debug|Any CPU = Debug|Any CPU
+    Release|Any CPU = Release|Any CPU
+  EndGlobalSection
+  GlobalSection(ProjectConfigurationPlatforms) = postSolution
+    {548B91EC-139F-472C-89D3-6E58A6B75338}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {548B91EC-139F-472C-89D3-6E58A6B75338}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {548B91EC-139F-472C-89D3-6E58A6B75338}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {548B91EC-139F-472C-89D3-6E58A6B75338}.Release|Any CPU.Build.0 = Release|Any CPU
+    {DE4C3B5F-BBD5-4E24-8705-70DF0DB90CDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {DE4C3B5F-BBD5-4E24-8705-70DF0DB90CDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {DE4C3B5F-BBD5-4E24-8705-70DF0DB90CDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {DE4C3B5F-BBD5-4E24-8705-70DF0DB90CDF}.Release|Any CPU.Build.0 = Release|Any CPU
+    {AA65CBBC-5D1F-4C69-8DC3-8FA9BB422054}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {AA65CBBC-5D1F-4C69-8DC3-8FA9BB422054}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {AA65CBBC-5D1F-4C69-8DC3-8FA9BB422054}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {AA65CBBC-5D1F-4C69-8DC3-8FA9BB422054}.Release|Any CPU.Build.0 = Release|Any CPU
+    {75D97206-62D5-49D6-A77D-B88519410326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {75D97206-62D5-49D6-A77D-B88519410326}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {75D97206-62D5-49D6-A77D-B88519410326}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {75D97206-62D5-49D6-A77D-B88519410326}.Release|Any CPU.Build.0 = Release|Any CPU
+    {E393D66A-8A10-494D-B5DD-A74FC3037FB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {E393D66A-8A10-494D-B5DD-A74FC3037FB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {E393D66A-8A10-494D-B5DD-A74FC3037FB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {E393D66A-8A10-494D-B5DD-A74FC3037FB3}.Release|Any CPU.Build.0 = Release|Any CPU
+    {442781A7-703B-4D2C-9081-F6E3E7FF742C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {442781A7-703B-4D2C-9081-F6E3E7FF742C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {442781A7-703B-4D2C-9081-F6E3E7FF742C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {442781A7-703B-4D2C-9081-F6E3E7FF742C}.Release|Any CPU.Build.0 = Release|Any CPU
+  EndGlobalSection
+EndGlobal
