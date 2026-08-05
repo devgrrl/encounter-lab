@@ -1,0 +1,119 @@
+.backdrop {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(0, 8, 6, .82);
+  backdrop-filter: blur(12px);
+}
+.dialog {
+  width: min(46rem, 100%);
+  max-height: min(92vh, 56rem);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: .55rem;
+  background:
+    linear-gradient(145deg, rgba(215, 255, 246, .09), transparent 28%),
+    rgba(5, 29, 24, .98);
+  color: var(--text);
+  box-shadow: inset 0 1px rgba(230, 255, 249, .13), 0 30px 100px rgba(0, 0, 0, .68);
+}
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .9rem 1rem;
+  border-bottom: 1px solid var(--border-muted);
+  background: rgba(8, 45, 36, .72);
+}
+.header > div { min-width: 0; }
+.header h2 { color: var(--ice-bright); font: 850 1.35rem/1 var(--font-display); }
+.header p { margin-top: .28rem; color: var(--text-muted); font-size: .8rem; }
+.close {
+  flex: 0 0 auto;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: .35rem;
+  background: var(--surface-solid);
+  color: white;
+  font-size: 1.55rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.body {
+  min-height: 0;
+  display: grid;
+  gap: .72rem;
+  padding: .85rem 1rem 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 1rem;
+}
+.group {
+  min-width: 0;
+  display: grid;
+  gap: .45rem;
+  margin: 0;
+  border: 1px solid var(--border-muted);
+  border-radius: .46rem;
+  padding: .68rem;
+  background: rgba(2, 18, 14, .38);
+}
+.group legend { padding: 0 .3rem; color: var(--text); font-size: .82rem; font-weight: 900; }
+.toggle {
+  min-height: 3.15rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .85rem;
+  border: 1px solid var(--border-muted);
+  border-radius: .38rem;
+  padding: .55rem .65rem;
+  background: var(--surface-inset);
+  cursor: pointer;
+}
+.toggle:hover { border-color: var(--ice); }
+.toggle:has(input:checked) { border-color: var(--ice-bright); background: rgba(14, 77, 63, .76); box-shadow: inset 3px 0 var(--ice); }
+.toggle:has(input:checked) .toggleCopy strong::after { content: " · on"; color: var(--ice-bright); font-size: .7rem; }
+.toggleCopy { min-width: 0; display: grid; gap: .12rem; }
+.toggleCopy strong { color: var(--text); font-size: .8rem; }
+.toggleCopy > span { color: var(--text-muted); font-size: .71rem; line-height: 1.4; }
+.toggle input { width: 1.4rem; height: 1.4rem; accent-color: var(--ice); cursor: pointer; }
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .6rem;
+  padding: .75rem 1rem;
+  border-top: 1px solid var(--border-muted);
+  background: rgba(3, 24, 19, .92);
+}
+.footer button { min-height: 2.6rem; border-radius: .34rem; padding: .55rem .82rem; font-weight: 900; cursor: pointer; }
+.secondary { border: 1px solid var(--border-strong); background: var(--surface-solid); color: var(--text); }
+.primary { border: 1px solid var(--ice-bright); background: var(--ice); color: #03100d; }
+@media(max-width: 560px) {
+  .backdrop { align-items: stretch; padding: 0; }
+  .dialog { width: 100%; max-height: 100vh; min-height: 100vh; border-radius: 0; }
+  .header, .body, .footer { padding-inline: .75rem; }
+  .footer button { flex: 1 1 10rem; }
+}
+@media(forced-colors: active) { .backdrop { background: Canvas; } .dialog, .header, .group, .toggle, .footer, .close, .footer button { border-color: CanvasText; background: Canvas; color: CanvasText; } }
+:global(html[data-a11y-solid-surfaces="true"]) .backdrop { background: #020806; backdrop-filter: none; }
+:global(html[data-a11y-solid-surfaces="true"]) .dialog,
+:global(html[data-a11y-solid-surfaces="true"]) .header,
+:global(html[data-a11y-solid-surfaces="true"]) .footer,
+:global(html[data-a11y-solid-surfaces="true"]) .toggle { background: var(--surface-solid); box-shadow: none; }
+:global(html[data-a11y-forced-colors-preview="true"]) .backdrop { background: #000; backdrop-filter: none; }
+:global(html[data-a11y-forced-colors-preview="true"]) .dialog,
+:global(html[data-a11y-forced-colors-preview="true"]) .header,
+:global(html[data-a11y-forced-colors-preview="true"]) .body,
+:global(html[data-a11y-forced-colors-preview="true"]) .footer,
+:global(html[data-a11y-forced-colors-preview="true"]) .group,
+:global(html[data-a11y-forced-colors-preview="true"]) .toggle { background: #000; color: #fff; border-color: #fff; }
