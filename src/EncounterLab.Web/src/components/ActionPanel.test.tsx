@@ -53,7 +53,7 @@ test('submits temporary hit points and reset from the compact controls', async (
   await user.click(screen.getByRole('button', { name: 'Temp HP' }));
   expect(onTemporary).toHaveBeenCalledWith(12);
 
-  await user.click(screen.getByRole('button', { name: 'Reset' }));
+  await user.click(screen.getByRole('button', { name: 'Reset encounter' }));
   expect(onReset).toHaveBeenCalledTimes(1);
 });
 
@@ -95,7 +95,7 @@ test('disables every control while busy', () => {
     />,
   );
 
-  expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Reset encounter' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Damage' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Heal' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Temp HP' })).toBeDisabled();

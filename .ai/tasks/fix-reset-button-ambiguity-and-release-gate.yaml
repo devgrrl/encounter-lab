@@ -1,0 +1,33 @@
+id: fix-reset-button-ambiguity-and-release-gate-001
+objective: >
+  Running the actual release gate (tools/validate.ps1, tools/package.ps1) for
+  the first time in this session surfaced two real, previously-undetected
+  problems: an accessible-name collision between two "Reset" buttons, and a
+  PowerShell reliability gap where a failing native command (npm, dotnet,
+  python) did not actually stop the script despite
+  $ErrorActionPreference = "Stop". Fix both, and every test file whose
+  locator depended on the old ambiguous name.
+scope:
+  allow:
+    - src/EncounterLab.Web/src/components/ActionPanel.tsx
+    - src/EncounterLab.Web/src/components/ActionPanel.test.tsx
+    - src/EncounterLab.Web/e2e/accessibility.spec.ts
+    - src/EncounterLab.Web/e2e/multiplayer.spec.ts
+    - tools/validate.ps1
+    - tools/package.ps1
+  deny:
+    - src/EncounterLab.Domain/**
+    - src/EncounterLab.Application/**
+acceptance:
+  - the ActionPanel Reset button and the CameraControls "Reset view" button have distinct, non-substring-colliding accessible names
+  - every test (Vitest unit tests and Playwright e2e specs) that queries the Reset button by accessible name is updated to match
+  - tools/validate.ps1 and tools/package.ps1 actually stop and report a non-zero exit when any native command (python/dotnet/npm) they invoke fails, verified by intentionally observing a real failure propagate correctly
+  - a full clean run of tools/package.ps1 produces encounter-lab-submission.zip with zero test failures
+validation:
+  - npx vitest run (full suite)
+  - npx tsc --noEmit -p tsconfig.app.json
+  - python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py
+  - tools/package.ps1 end to end
+risk: low
+approval:
+  before_merge: human

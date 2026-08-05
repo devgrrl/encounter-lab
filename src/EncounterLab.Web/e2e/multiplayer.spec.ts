@@ -1,6 +1,14 @@
 import { expect, test } from '@playwright/test';
 
 test('two clients synchronize, reconnect automatically, and inspect committed history', async ({ browser }) => {
+  // This test's own deliberate waits (12s quiet-connection check + 25s offline-
+  // detection wait + up to 30s reconnect wait) already total ~67s against the
+  // suite's 100s default timeout, leaving too little headroom for page/model
+  // load time and the remaining steps. Those waits are load-bearing (they
+  // verify real SignalR timing thresholds, see combatHub.ts), so the fix is
+  // more budget, not shorter waits.
+  test.setTimeout(150_000);
+
   const contextA = await browser.newContext();
   const contextB = await browser.newContext();
   const pageA = await contextA.newPage();
@@ -17,7 +25,7 @@ test('two clients synchronize, reconnect automatically, and inspect committed hi
   await expect(pageA.getByRole('status', { name: 'Connection status' })).toContainText('Live sync connected');
   await expect(pageB.getByRole('status', { name: 'Connection status' })).toContainText('Live sync connected');
 
-  await pageA.getByRole('button', { name: 'Reset' }).click();
+  await pageA.getByRole('button', { name: 'Reset encounter' }).click();
   await expect(pageA.getByTestId('hit-points')).toHaveText('25 / 25');
 
   await pageA.getByLabel('Damage amount').fill('14');
@@ -28,7 +36,12 @@ test('two clients synchronize, reconnect automatically, and inspect committed hi
   await expect(pageB.getByTestId('hit-points')).toHaveText('11 / 25');
 
   await contextB.setOffline(true);
-  await expect(pageB.getByRole('status', { name: 'Connection status' })).not.toContainText('Live sync connected', { timeout: 15_000 });
+  // combatHub.ts sets serverTimeoutInMilliseconds to 20s (deliberately
+  // above two 5s heartbeats, see its own comment) - the client cannot
+  // detect a dead connection faster than that in the worst case, so this
+  // wait must stay safely longer than 20s or it fails on timing alone,
+  // not on a real behavior regression.
+  await expect(pageB.getByRole('status', { name: 'Connection status' })).not.toContainText('Live sync connected', { timeout: 25_000 });
 
   await pageA.getByLabel('Healing amount').fill('4');
   await pageA.getByRole('button', { name: 'Heal' }).click();

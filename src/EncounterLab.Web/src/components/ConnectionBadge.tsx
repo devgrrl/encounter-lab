@@ -21,7 +21,7 @@ export function ConnectionBadge({ status, paused = false }: { status: Connection
     <div className={`${styles.badge} ${stateClass}`} role="status" aria-label="Connection status" aria-live="polite" aria-atomic="true" title={fullLabel}>
       <span className={styles.dot} aria-hidden="true" />
       <span aria-hidden="true">{shortLabel}</span>
-      <span className={styles.srOnly}>{fullLabel}</span>
+      <span className={styles.srOnly}> {fullLabel}</span>
     </div>
   );
 }

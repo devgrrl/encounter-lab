@@ -45,9 +45,9 @@ export function ActionPanel(props: ActionPanelProps) {
       </p>
 
       <div className={styles.toolbar}>
-        <button type="button" disabled={props.busy} title="Reset encounter" onClick={props.onReset}>
+        <button type="button" disabled={props.busy} title="Reset encounter" aria-label="Reset encounter" onClick={props.onReset}>
           <ResetIcon />
-          <span>Reset</span>
+          <span aria-hidden="true">Reset</span>
         </button>
       </div>
 

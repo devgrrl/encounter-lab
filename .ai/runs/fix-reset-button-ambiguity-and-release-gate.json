@@ -1,0 +1,27 @@
+{
+  "taskId": "fix-reset-button-ambiguity-and-release-gate-001",
+  "status": "completed-and-validated",
+  "provider": "Anthropic",
+  "model": "claude-sonnet-5",
+  "date": "2026-08-05",
+  "acceptedFiles": [
+    "src/EncounterLab.Web/src/components/ActionPanel.tsx",
+    "src/EncounterLab.Web/src/components/ActionPanel.test.tsx",
+    "src/EncounterLab.Web/src/components/ConnectionBadge.tsx",
+    "src/EncounterLab.Web/e2e/accessibility.spec.ts",
+    "src/EncounterLab.Web/e2e/multiplayer.spec.ts",
+    "tools/validate.ps1",
+    "tools/package.ps1"
+  ],
+  "scopeDeviation": "ConnectionBadge.tsx was not in the original task's scope.allow list. It was touched because running the actual release gate surfaced a second real bug from the same root cause (the multiplayer e2e spec's assertions against the connection-status region) that the task's stated acceptance criteria could not be met without fixing. Flagging the deviation rather than silently expanding scope.",
+  "implementation": "Four distinct, separately-diagnosed problems surfaced by actually running tools/validate.ps1 and tools/package.ps1 end to end, not by inspection: (1) ActionPanel's 'Reset' button and CameraControls's 'Reset view' button both matched Playwright's substring-based getByRole name locator - gave ActionPanel's button an explicit aria-label=\"Reset encounter\" plus a visible <span aria-hidden> label, which in turn broke ActionPanel.test.tsx's own exact-match Vitest/RTL queries (RTL defaults to exact name matching, Playwright defaults to substring) - updated those queries and both e2e spec files to the new name. (2) ConnectionBadge's adjacent aria-hidden and sr-only <span> siblings concatenate with no separator in raw textContent (though the accessible name itself is unaffected, since it comes from an explicit aria-label on the container) - Playwright's toContainText reads raw textContent, so 'Live' + 'Live sync connected' rendered as 'LiveLive sync connected' and failed a not-toContainText assertion - fixed with a leading space in the sr-only span. (3) PowerShell's $ErrorActionPreference = 'Stop' does not catch non-zero exit codes from native processes (npm/dotnet/python) - validate.ps1 and package.ps1 were both rewritten to check $LASTEXITCODE after every native invocation via an explicit Invoke-Checked helper (validate.ps1) / inline checks (package.ps1), so a real e2e failure now actually stops the pipeline instead of silently producing a submission zip anyway. (4) After fixing (1)-(3), a genuinely new failure appeared in multiplayer.spec.ts: 'Test timeout of 100000ms exceeded' with no specific failing assertion. Root-caused by summing the test's own deliberate waits - 12s quiet-connection check + 25s offline-detection wait + 30s reconnect wait = 67s of waiting that is load-bearing (it verifies real SignalR timing thresholds documented in combatHub.ts) - against the suite's 100s default timeout, leaving too little headroom for page/model load and the remaining interaction steps. Fixed by raising this single test's budget via test.setTimeout(150_000) rather than shortening any wait, since shortening would break what the test is actually verifying.",
+  "executedValidation": [
+    "npx vitest run (full suite): 16 files / 184 tests passed",
+    "dotnet test: EncounterLab.Domain.Tests 45/45 passed, EncounterLab.Api.Tests 35/35 passed",
+    "python tools/architecture-check.py / accessibility-check.py / ui-quality-check.py: all passed",
+    "npx playwright test (full e2e suite): 8/8 passed in 3.5m, including multiplayer.spec.ts end to end - confirmed by re-running the exact same failing test three times across three separate tools/package.ps1 invocations as each root cause was fixed: run 1 failed on the Reset-button collision, run 2 (after fix) failed on the ConnectionBadge concatenation plus the 15s-vs-20s offline-detection timing, run 3 (after fix) failed on the overall 100s test-timeout budget, run 4 (after test.setTimeout fix) passed clean",
+    "tools/package.ps1 end to end: produced encounter-lab-submission.zip with zero test failures",
+    "docker compose build && docker compose up -d: both images built clean; curl against http://localhost:5000/api/health returned {\"status\":\"ready\",...}; curl against http://localhost:5173/ returned 200; docker compose down -v removed the verification containers/volume/network cleanly - this was ad hoc verification of the README's documented Docker quick-start path, prompted by a direct question, not something the task yaml asked for"
+  ],
+  "note": "This run record was written after the fact - the task yaml already existed but the run JSON was missed at the time the code changes landed. Reconstructed here from the actual sequence of tools/package.ps1 invocations and their real output, not from memory of intent."
+}

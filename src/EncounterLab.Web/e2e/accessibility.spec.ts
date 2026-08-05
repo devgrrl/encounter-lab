@@ -47,7 +47,7 @@ test('meets automated WCAG 2.2 AA interface guardrails', async ({ page }) => {
   await expect(d12).toHaveAttribute('aria-pressed', 'true');
   await expect(d12).toContainText('1');
 
-  await page.getByRole('button', { name: 'Reset' }).click();
+  await page.getByRole('button', { name: 'Reset encounter' }).click();
   const slider = page.getByRole('slider', { name: 'Replay timeline position' });
   await expect(slider).toHaveAttribute('aria-valuetext', 'Current');
   await expect(page.getByRole('button', { name: 'Previous replay position' })).toBeEnabled();
