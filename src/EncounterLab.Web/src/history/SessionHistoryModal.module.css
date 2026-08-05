@@ -1,0 +1,15 @@
+.backdrop { position: fixed; z-index: 2000; inset: 0; display: grid; place-items: center; padding: 1rem; overflow-y: auto; background: rgba(0, 8, 6, .84); backdrop-filter: blur(12px); }
+.dialog { width: min(58rem, 100%); height: min(88vh, 52rem); min-height: min(32rem, 88vh); display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; border: 1px solid var(--border-strong); border-radius: .55rem; background: linear-gradient(145deg, rgba(216, 255, 246, .08), transparent 30%), rgba(5, 29, 24, .98); color: var(--text); box-shadow: inset 0 1px rgba(230, 255, 249, .12), 0 30px 100px rgba(0, 0, 0, .68); }
+.header { min-height: 3.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem .7rem .55rem 1rem; border-bottom: 1px solid var(--border-muted); background: rgba(8, 45, 36, .72); }
+.header h2 { color: var(--ice-bright); font: 850 1.18rem/1 var(--font-display); }
+.header h2 span { display: inline-grid; min-width: 1.45rem; place-items: center; margin-left: .3rem; border-radius: 999px; padding: .1rem .35rem; background: var(--gold); color: #07100c; font-size: .68rem; }
+.close { flex: 0 0 auto; width: 2.5rem; height: 2.5rem; border: 1px solid var(--border-strong); border-radius: .35rem; background: var(--surface-solid); color: white; font-size: 1.45rem; line-height: 1; cursor: pointer; }
+.body { min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr); gap: .6rem; padding: .75rem; overflow: hidden; }
+.withNotice { grid-template-rows: auto minmax(0, 1fr); }
+.notice { border: 1px solid var(--gold); border-radius: .38rem; padding: .55rem .65rem; background: rgba(64, 49, 12, .88); color: #fff0bb; font-size: .75rem; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media(max-width: 560px) { .backdrop { align-items: stretch; padding: 0; } .dialog { width: 100%; height: 100vh; min-height: 100vh; border-radius: 0; } }
+@media(forced-colors: active) { .backdrop { background: Canvas; } .dialog, .header, .body, .notice, .close { border-color: CanvasText; background: Canvas; color: CanvasText; } }
+:global(html[data-a11y-solid-surfaces="true"]) .backdrop { background: #020806; backdrop-filter: none; }
+:global(html[data-a11y-solid-surfaces="true"]) .dialog,
+:global(html[data-a11y-solid-surfaces="true"]) .header { background: var(--surface-solid); box-shadow: none; }

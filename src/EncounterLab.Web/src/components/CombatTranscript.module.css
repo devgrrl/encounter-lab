@@ -1,0 +1,23 @@
+.panel { height: 100%; min-height: 0; display: grid; grid-template-rows: minmax(8rem, 1fr) auto; gap: .6rem; }
+.empty { color: var(--text-muted); padding: 1rem; font-size: .8rem; }
+.list { min-height: 0; overflow: auto; overscroll-behavior: contain; display: grid; align-content: start; gap: .34rem; padding: .2rem .32rem .2rem .2rem; scroll-padding: .4rem; }
+.list button { width: 100%; min-height: 2.65rem; display: grid; grid-template-columns: .5rem 1.7rem minmax(0, 1fr) auto; gap: .45rem; align-items: start; text-align: left; border: 1px solid var(--border-muted); border-radius: .38rem; padding: .55rem; background: var(--surface-inset); color: var(--text); cursor: pointer; scroll-margin-block: .4rem; }
+.list button:hover { border-color: var(--ice); background: rgba(12, 66, 54, .72); }
+.list button[aria-pressed="true"] { border-color: var(--ice-bright); background: rgba(14, 77, 63, .78); box-shadow: inset 4px 0 var(--ice); }
+.marker { width: .5rem; height: .5rem; margin-top: .27rem; border: 1px solid currentColor; border-radius: 50%; box-shadow: 0 0 10px currentColor; background: currentColor; }
+.damage { color: var(--red-bright); }
+.healing { color: var(--green-bright); }
+.shield { color: var(--ice-bright); }
+.dice { color: var(--gold-bright); }
+.reset { color: var(--gold); }
+.neutral { color: var(--text-muted); }
+.sequence { color: var(--text-subtle); font: 800 .68rem/1.5 ui-monospace, monospace; }
+.summary { min-width: 0; font-size: .76rem; line-height: 1.45; overflow-wrap: anywhere; }
+.selectedCue { color: var(--ice-bright); font-size: .62rem; line-height: 1.5; }
+.reasoning { border-top: 1px solid var(--border-muted); padding-top: .58rem; }
+.reasoning h3 { color: var(--text-subtle); font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; }
+.reasoning ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .26rem .7rem; margin-top: .42rem; }
+.reasoning li { position: relative; padding-left: .78rem; color: var(--text-muted); font-size: .7rem; line-height: 1.42; }
+.reasoning li::before { content: "•"; position: absolute; left: 0; color: var(--ice); }
+@media(max-width: 700px) { .reasoning ul { grid-template-columns: 1fr; } .list button { grid-template-columns: .5rem 1.7rem minmax(0, 1fr); } .selectedCue { grid-column: 3; } }
+@media(forced-colors: active) { .list button, .reasoning { border-color: CanvasText; background: Canvas; color: CanvasText; } .list button[aria-pressed="true"] { outline: 3px solid Highlight; box-shadow: none; } }
