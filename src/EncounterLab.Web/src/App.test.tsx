@@ -127,6 +127,28 @@ test('renders the full layout once the encounter has loaded', () => {
   expect(screen.getByRole('status', { name: 'Connection status' })).toHaveTextContent('Live');
 });
 
+test('the Reset button lives in the header, to the left of History', async () => {
+  resetControllerMock();
+  const user = userEvent.setup();
+  render(<App />);
+
+  const resetButton = screen.getByRole('button', { name: 'Reset' });
+  const historyButton = screen.getByRole('button', { name: /History/ });
+  const position = resetButton.compareDocumentPosition(historyButton);
+  expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+  await user.click(resetButton);
+  expect(controllerMock.actions.reset).toHaveBeenCalledTimes(1);
+});
+
+test('the header Reset button is disabled while busy', () => {
+  resetControllerMock();
+  controllerMock.busy = true;
+  render(<App />);
+
+  expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
+});
+
 test('the skip link focuses the combat controls region', async () => {
   resetControllerMock();
   const user = userEvent.setup();

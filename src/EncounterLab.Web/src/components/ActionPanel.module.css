@@ -5,28 +5,12 @@
   gap: .55rem;
   scroll-margin-top: .5rem;
 }
-.toolbar {
-  min-height: 2.4rem;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: .6rem;
-  border-bottom: 1px solid var(--border-muted);
-  padding-bottom: .45rem;
-}
-.toolbar button {
-  display: flex;
-  align-items: center;
-  gap: .38rem;
-  min-height: 2.4rem;
-  border: 1px solid var(--border-strong);
-  border-radius: .35rem;
-  padding: .4rem .7rem;
-  background: var(--surface-solid);
-  color: var(--text);
-  font-size: .72rem;
-  font-weight: 850;
-  cursor: pointer;
+.heading {
+  margin: 0;
+  color: var(--ice-bright);
+  font: 850 .82rem/1 var(--font-display);
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 .row {
   min-width: 0;
@@ -96,5 +80,5 @@
   .row > button { justify-self: stretch; width: auto; }
 }
 @media (forced-colors: active) {
-  .toolbar button, .row, .row input, .row select, .row button { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .row, .row input, .row select, .row button { border-color: CanvasText; background: Canvas; color: CanvasText; }
 }

@@ -14,7 +14,6 @@ test('submits server-authoritative combat intents from compact controls', async 
       onHeal={onHeal}
       onTemporary={vi.fn()}
       onClearTemporary={vi.fn()}
-      onReset={vi.fn()}
     />,
   );
 
@@ -32,10 +31,9 @@ test('submits server-authoritative combat intents from compact controls', async 
   expect(onHeal).toHaveBeenCalledWith(7);
 });
 
-test('submits temporary hit points and reset from the compact controls', async () => {
+test('submits temporary hit points from the compact controls', async () => {
   const user = userEvent.setup();
   const onTemporary = vi.fn();
-  const onReset = vi.fn();
   render(
     <ActionPanel
       busy={false}
@@ -43,7 +41,6 @@ test('submits temporary hit points and reset from the compact controls', async (
       onHeal={vi.fn()}
       onTemporary={onTemporary}
       onClearTemporary={vi.fn()}
-      onReset={onReset}
     />,
   );
 
@@ -52,9 +49,6 @@ test('submits temporary hit points and reset from the compact controls', async (
   await user.type(temporary, '12');
   await user.click(screen.getByRole('button', { name: 'Temp HP' }));
   expect(onTemporary).toHaveBeenCalledWith(12);
-
-  await user.click(screen.getByRole('button', { name: 'Reset encounter' }));
-  expect(onReset).toHaveBeenCalledTimes(1);
 });
 
 test('the Clear button zeroes out temporary HP regardless of the typed amount', async () => {
@@ -68,7 +62,6 @@ test('the Clear button zeroes out temporary HP regardless of the typed amount', 
       onHeal={vi.fn()}
       onTemporary={onTemporary}
       onClearTemporary={onClearTemporary}
-      onReset={vi.fn()}
     />,
   );
 
@@ -91,11 +84,9 @@ test('disables every control while busy', () => {
       onHeal={vi.fn()}
       onTemporary={vi.fn()}
       onClearTemporary={vi.fn()}
-      onReset={vi.fn()}
     />,
   );
 
-  expect(screen.getByRole('button', { name: 'Reset encounter' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Damage' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Heal' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Temp HP' })).toBeDisabled();

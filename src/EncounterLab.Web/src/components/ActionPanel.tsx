@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { DamageType } from '../types';
 import { damageTypes, titleCase } from '../utils/damageTypes';
 import styles from './ActionPanel.module.css';
-import { ClearIcon, DamageIcon, HealIcon, ResetIcon, ShieldIcon } from './icons';
+import { ClearIcon, DamageIcon, HealIcon, ShieldIcon } from './icons';
 
 export interface ActionPanelProps {
   busy: boolean;
@@ -10,7 +10,6 @@ export interface ActionPanelProps {
   onHeal: (amount: number) => Promise<void> | void;
   onTemporary: (amount: number) => Promise<void> | void;
   onClearTemporary: () => Promise<void> | void;
-  onReset: () => Promise<void> | void;
 }
 
 export function ActionPanel(props: ActionPanelProps) {
@@ -36,12 +35,7 @@ export function ActionPanel(props: ActionPanelProps) {
         {props.busy ? 'Combat command in progress.' : ''}
       </p>
 
-      <div className={styles.toolbar}>
-        <button type="button" disabled={props.busy} title="Reset encounter" aria-label="Reset encounter" onClick={props.onReset}>
-          <ResetIcon />
-          <span aria-hidden="true">Reset</span>
-        </button>
-      </div>
+      <h2 className={styles.heading}>HP Engine</h2>
 
       <form aria-label="Damage" className={`${styles.row} ${styles.damageRow}`} onSubmit={submit(() => void props.onDamage(damage, damageType))}>
         <label>

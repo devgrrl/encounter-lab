@@ -213,7 +213,15 @@
   .headerControls { justify-content: flex-start; flex-wrap: wrap; }
   .layout { display: flex; flex-direction: column; }
   .center, .rightRail, .character { width: 100%; }
-  .rightRail { display: flex; flex-direction: column; }
+  /* Move just the HP Engine controls (not the dice roller) above the replay
+     bar and 3D scene: .rightRail's own box drops out (display: contents), so
+     its two sections become direct flex items of .layout and can be ordered
+     independently of each other and of .character/.center. */
+  .rightRail { display: contents; }
+  .character { order: 1; }
+  [aria-label="Combat commands"] { order: 2; }
+  .center { order: 3; }
+  [aria-label="Dice roller"] { order: 4; }
   /* .center has no explicit height in the stacked flex layout, so its
      minmax(0, 1fr) scene row has no leftover space to grow into and falls
      back to EncounterScene's bare 20rem floor — visibly squashed on a phone.

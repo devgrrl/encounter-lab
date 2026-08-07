@@ -5,6 +5,7 @@ import { ActionPanel } from './components/ActionPanel';
 import { CharacterPanel } from './components/CharacterPanel';
 import { ConnectionBadge } from './components/ConnectionBadge';
 import { DiceStation } from './components/DiceResult';
+import { ResetIcon } from './components/icons';
 import { ReplayTimeline } from './components/ReplayTimeline';
 import { SessionHistoryModal } from './history/SessionHistoryModal';
 import { EncounterScene } from './scene/EncounterScene';
@@ -83,6 +84,7 @@ export function App() {
   }
 
   const { character, events } = controller.encounter;
+  const busy = controller.busy || controller.isReplaying || controller.hasPendingCommand;
   const historyModal = (
     <SessionHistoryModal
       open={historyOpen}
@@ -109,6 +111,16 @@ export function App() {
           <h1>Encounter Lab</h1>
         </div>
         <nav className={styles.headerControls} aria-label="Encounter utilities">
+          <button
+            type="button"
+            className={styles.headerButton}
+            disabled={busy}
+            onClick={() => void controller.actions.reset()}
+            title="Reset encounter"
+          >
+            <ResetIcon />
+            Reset
+          </button>
           <button
             type="button"
             className={styles.headerButton}
@@ -198,16 +210,15 @@ export function App() {
 
         <aside className={`${styles.panel} ${styles.rightRail}`} aria-label="Combat command rail">
           <ActionPanel
-            busy={controller.busy || controller.isReplaying || controller.hasPendingCommand}
+            busy={busy}
             onDamage={controller.actions.damage}
             onHeal={controller.actions.heal}
             onTemporary={controller.actions.temporary}
             onClearTemporary={controller.actions.clearTemporary}
-            onReset={controller.actions.reset}
           />
           <DiceStation
             event={controller.displayDiceEvent}
-            busy={controller.busy || controller.isReplaying || controller.hasPendingCommand}
+            busy={busy}
             onRollDamage={controller.actions.rollDamage}
             onRollHealing={controller.actions.rollHealing}
             onRollShield={controller.actions.rollShield}
