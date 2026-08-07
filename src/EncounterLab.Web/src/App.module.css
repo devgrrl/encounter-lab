@@ -190,10 +190,22 @@
   .headerButton { padding-inline: .5rem; }
 }
 @media (max-width: 1080px) {
-  .app { height: auto; min-height: 100dvh; overflow: visible; grid-template-rows: auto auto; }
+  /* Below this width the page grows taller than the viewport and scrolls as a
+     whole document instead of being clipped to 100dvh (see the .app override
+     just below). Grid's default align-content stretches auto-sized rows to
+     fill any leftover space in a taller container — align-content: start
+     turns that off, so .layout only ever takes the height its content needs. */
+  .app { height: auto; min-height: 100dvh; overflow: visible; grid-template-rows: auto auto; align-content: start; }
   .layout { grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr); }
   .rightRail { grid-column: 1 / -1; height: auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem); overflow: visible; }
   .rightRail > :last-child { margin-top: 0; }
+  /* .character carries height: 100%; overflow-y: auto in the base (desktop) rule
+     so the three columns match height in the fixed-viewport layout. Once the
+     page scrolls instead, that same rule either stretches the panel taller
+     than its content (visible dead space below the stats/defenses) or, on
+     narrower viewports, resolves shorter than its content and turns the panel
+     into its own scroll-capturing box instead of letting the page scroll. */
+  .character { height: auto; overflow-y: visible; overscroll-behavior: auto; }
 }
 @media (max-width: 760px) {
   .app { padding: .4rem; gap: .4rem; }
@@ -202,6 +214,11 @@
   .layout { display: flex; flex-direction: column; }
   .center, .rightRail, .character { width: 100%; }
   .rightRail { display: flex; flex-direction: column; }
+  /* .center has no explicit height in the stacked flex layout, so its
+     minmax(0, 1fr) scene row has no leftover space to grow into and falls
+     back to EncounterScene's bare 20rem floor — visibly squashed on a phone.
+     Give it real room instead of relying on that floor. */
+  .center { min-height: 50vh; }
   .noticeStack { top: .4rem; }
 }
 @media (max-width: 430px) { .headerButton { flex: 1 1 auto; } }

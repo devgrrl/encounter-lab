@@ -1,12 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import type { DamageType } from '../types';
+import { damageTypes, titleCase } from '../utils/damageTypes';
 import styles from './ActionPanel.module.css';
 import { ClearIcon, DamageIcon, HealIcon, ResetIcon, ShieldIcon } from './icons';
-
-const damageTypes: DamageType[] = [
-  'BLUDGEONING', 'PIERCING', 'SLASHING', 'FIRE', 'COLD', 'ACID', 'THUNDER',
-  'LIGHTNING', 'POISON', 'RADIANT', 'NECROTIC', 'PSYCHIC', 'FORCE',
-];
 
 export interface ActionPanelProps {
   busy: boolean;
@@ -15,10 +11,6 @@ export interface ActionPanelProps {
   onTemporary: (amount: number) => Promise<void> | void;
   onClearTemporary: () => Promise<void> | void;
   onReset: () => Promise<void> | void;
-}
-
-function titleCase(value: string) {
-  return value.charAt(0) + value.slice(1).toLowerCase();
 }
 
 export function ActionPanel(props: ActionPanelProps) {
@@ -101,7 +93,7 @@ export function ActionPanel(props: ActionPanelProps) {
         <label>
           <span>Temporary hit points amount</span>
           <input
-            min="0"
+            min="1"
             inputMode="numeric"
             type="number"
             aria-label="Temporary hit points amount"

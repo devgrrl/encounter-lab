@@ -43,6 +43,17 @@ test('explains temporary hit point reasoning', () => {
   expect(eventReasoning(event)).toEqual(['Requested temporary HP: 5', 'Resulting temporary HP: 10']);
 });
 
+test('explains clearing temporary HP', () => {
+  const event: CombatEvent = {
+    id: '4b', sequence: 4, occurredAt: new Date().toISOString(), commandId: 'f2', characterId: 'briv',
+    type: 'TemporaryHitPointsCleared', summary: 'cleared',
+    details: { requestedTemporaryHitPoints: 0, appliedTemporaryHitPoints: 0 },
+    stateAfter: { currentHitPoints: 25, maximumHitPoints: 25, temporaryHitPoints: 0, version: 4 },
+  };
+  expect(eventTone(event)).toBe('shield');
+  expect(eventReasoning(event)).toEqual(['Temporary HP was cleared to zero.']);
+});
+
 test('explains a dice roll with no group breakdown by falling back to the raw dice', () => {
   const event: CombatEvent = {
     id: '5', sequence: 5, occurredAt: new Date().toISOString(), commandId: 'g', characterId: 'briv',

@@ -135,6 +135,11 @@ public sealed record TemporaryHitPointsInput(
     int ExpectedVersion,
     int Amount);
 
+public sealed record ClearTemporaryHitPointsInput(
+    string CharacterId,
+    string CommandId,
+    int ExpectedVersion);
+
 public sealed record DiceRollInput(
     string CharacterId,
     string CommandId,

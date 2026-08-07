@@ -239,6 +239,47 @@ public sealed class GraphQlTests
     }
 
     [Fact]
+    public async Task ClearTemporaryHitPointsAlwaysResetsToZero()
+    {
+        await using var fixture = CreateFixture();
+
+        using var grant = await fixture.SendAsync(
+            """
+            mutation Grant($input: TemporaryHitPointsInput!) {
+              setTemporaryHitPoints(input: $input) { character { version } }
+            }
+            """,
+            new
+            {
+                input = new
+                {
+                    characterId = "briv", commandId = Guid.NewGuid().ToString("N"), expectedVersion = 0, amount = 10
+                }
+            });
+        using var grantDocument = await JsonDocument.ParseAsync(await grant.Content.ReadAsStreamAsync());
+        var version = grantDocument.RootElement.GetProperty("data").GetProperty("setTemporaryHitPoints")
+            .GetProperty("character").GetProperty("version").GetInt32();
+
+        using var clear = await fixture.SendAsync(
+            """
+            mutation Clear($input: ClearTemporaryHitPointsInput!) {
+              clearTemporaryHitPoints(input: $input) { character { hitPoints { temporary } } event { type } }
+            }
+            """,
+            new
+            {
+                input = new
+                {
+                    characterId = "briv", commandId = Guid.NewGuid().ToString("N"), expectedVersion = version
+                }
+            });
+        using var clearDocument = await JsonDocument.ParseAsync(await clear.Content.ReadAsStreamAsync());
+        var result = clearDocument.RootElement.GetProperty("data").GetProperty("clearTemporaryHitPoints");
+        Assert.Equal(0, result.GetProperty("character").GetProperty("hitPoints").GetProperty("temporary").GetInt32());
+        Assert.Equal("TemporaryHitPointsCleared", result.GetProperty("event").GetProperty("type").GetString());
+    }
+
+    [Fact]
     public async Task ConstitutionReflectsTheIounStoneModifier()
     {
         await using var fixture = CreateFixture();

@@ -67,11 +67,9 @@ public sealed record CharacterState(
     {
         var resolution = HitPoints.SetTemporaryHitPoints(amount);
         var next = this with { HitPoints = resolution.Next, Version = checked(Version + 1) };
-        var summary = amount == 0
-            ? $"{Name}'s temporary HP was cleared."
-            : amount <= HitPoints.Temporary
-                ? $"{Name} kept {HitPoints.Temporary} temporary HP because the existing value was equal or higher."
-                : $"{Name} gained {resolution.AppliedTemporaryHitPoints} temporary HP.";
+        var summary = amount <= HitPoints.Temporary
+            ? $"{Name} kept {HitPoints.Temporary} temporary HP because the existing value was equal or higher."
+            : $"{Name} gained {resolution.AppliedTemporaryHitPoints} temporary HP.";
 
         return new CombatDecision(
             next,
@@ -82,6 +80,27 @@ public sealed record CharacterState(
                 {
                     RequestedTemporaryHitPoints = amount,
                     AppliedTemporaryHitPoints = resolution.AppliedTemporaryHitPoints
+                },
+                next));
+    }
+
+    public CombatDecision ClearTemporaryHitPoints()
+    {
+        var resolution = HitPoints.ClearTemporaryHitPoints();
+        var next = this with { HitPoints = resolution.Next, Version = checked(Version + 1) };
+        var summary = resolution.PreviousTemporaryHitPoints == 0
+            ? $"{Name}'s temporary HP was already zero."
+            : $"{Name}'s temporary HP was cleared.";
+
+        return new CombatDecision(
+            next,
+            UncommittedCombatEvent.Create(
+                "TemporaryHitPointsCleared",
+                summary,
+                new CombatEventDetails
+                {
+                    RequestedTemporaryHitPoints = 0,
+                    AppliedTemporaryHitPoints = 0
                 },
                 next));
     }

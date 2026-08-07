@@ -215,6 +215,10 @@ export function setTemporaryHitPoints(
   return runMutation('setTemporaryHitPoints', 'TemporaryHitPointsInput', input, options);
 }
 
+export function clearTemporaryHitPoints(input: BaseInput, options?: RequestOptions) {
+  return runMutation('clearTemporaryHitPoints', 'ClearTemporaryHitPointsInput', input, options);
+}
+
 export function rollDice(
   input: BaseInput & { expression: string },
   options?: RequestOptions,

@@ -56,12 +56,23 @@ public sealed class CharacterStateTests
     }
 
     [Fact]
-    public void SettingTemporaryHitPointsToZeroClearsThemWithAnAccurateSummary()
+    public void ClearingTemporaryHitPointsResetsThemWithAnAccurateSummary()
     {
         var character = Create() with { HitPoints = new HitPointPool(25, 25, 10) };
-        var decision = character.SetTemporaryHitPoints(0);
+        var decision = character.ClearTemporaryHitPoints();
         Assert.Equal(0, decision.State.HitPoints.Temporary);
+        Assert.Equal("TemporaryHitPointsCleared", decision.Event.Type);
         Assert.Contains("cleared", decision.Event.Summary, StringComparison.Ordinal);
+        Assert.Equal(1, decision.State.Version);
+    }
+
+    [Fact]
+    public void ClearingAlreadyZeroTemporaryHitPointsReportsNoChange()
+    {
+        var character = Create();
+        var decision = character.ClearTemporaryHitPoints();
+        Assert.Equal(0, decision.State.HitPoints.Temporary);
+        Assert.Contains("already zero", decision.Event.Summary, StringComparison.Ordinal);
     }
 
     private static CharacterState Create() =>

@@ -31,7 +31,17 @@ const { controllerMock, useEncounterControllerMock, useAccessibilityDebugMock } 
     setReplayIndex: vi.fn(),
     reducedMotion: false,
     setReducedMotion: vi.fn(),
-    actions: { damage: vi.fn(), heal: vi.fn(), temporary: vi.fn(), roll: vi.fn(), reset: vi.fn() },
+    actions: {
+      damage: vi.fn(),
+      heal: vi.fn(),
+      temporary: vi.fn(),
+      clearTemporary: vi.fn(),
+      roll: vi.fn(),
+      rollDamage: vi.fn(),
+      rollHealing: vi.fn(),
+      rollShield: vi.fn(),
+      reset: vi.fn(),
+    },
     retryPending: vi.fn(),
     dismissSyncWarning: vi.fn(),
     reload: vi.fn(),
@@ -162,7 +172,7 @@ test('opens the accessibility lab with Alt+Shift+A', async () => {
   expect(screen.getByRole('dialog', { name: /Accessibility/i })).toBeInTheDocument();
 });
 
-test('the Clear button requests a zero temporary HP amount, independent of the typed value', async () => {
+test('the Clear button calls the dedicated clear action, independent of the typed value', async () => {
   resetControllerMock();
   const user = userEvent.setup();
   render(<App />);
@@ -172,7 +182,23 @@ test('the Clear button requests a zero temporary HP amount, independent of the t
   await user.type(temporary, '15');
   await user.click(screen.getByRole('button', { name: 'Clear' }));
 
-  expect(controllerMock.actions.temporary).toHaveBeenCalledWith(0);
+  expect(controllerMock.actions.clearTemporary).toHaveBeenCalledTimes(1);
+  expect(controllerMock.actions.temporary).not.toHaveBeenCalled();
+});
+
+test('the dice station rolls damage, healing, and shield through the composite actions', async () => {
+  resetControllerMock();
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole('button', { name: 'Roll Damage' }));
+  expect(controllerMock.actions.rollDamage).toHaveBeenCalledWith('1d20+2d6', 'PIERCING');
+
+  await user.click(screen.getByRole('button', { name: 'Roll Healing' }));
+  expect(controllerMock.actions.rollHealing).toHaveBeenCalledWith('1d20+2d6');
+
+  await user.click(screen.getByRole('button', { name: 'Roll Shield' }));
+  expect(controllerMock.actions.rollShield).toHaveBeenCalledWith('1d20+2d6');
 });
 
 test('the pause button toggles reduced motion', async () => {

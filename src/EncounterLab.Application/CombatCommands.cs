@@ -23,6 +23,11 @@ public sealed record SetTemporaryHitPointsCommand(
     int ExpectedVersion,
     int Amount) : CombatCommand(CharacterId, CommandId, ExpectedVersion);
 
+public sealed record ClearTemporaryHitPointsCommand(
+    string CharacterId,
+    string CommandId,
+    int ExpectedVersion) : CombatCommand(CharacterId, CommandId, ExpectedVersion);
+
 public sealed record DiceRollCommand(
     string CharacterId,
     string CommandId,

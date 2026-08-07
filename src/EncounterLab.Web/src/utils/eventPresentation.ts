@@ -7,6 +7,7 @@ export function eventTone(event: CombatEvent): EventTone {
     case 'DamageApplied': return 'damage';
     case 'CharacterHealed': return 'healing';
     case 'TemporaryHitPointsSet': return 'shield';
+    case 'TemporaryHitPointsCleared': return 'shield';
     case 'DiceRolled': return 'dice';
     case 'EncounterReset': return 'reset';
     default: return 'neutral';
@@ -34,6 +35,8 @@ export function eventReasoning(event: CombatEvent): string[] {
         `Requested temporary HP: ${details.requestedTemporaryHitPoints ?? 0}`,
         `Resulting temporary HP: ${details.appliedTemporaryHitPoints ?? 0}`,
       ];
+    case 'TemporaryHitPointsCleared':
+      return ['Temporary HP was cleared to zero.'];
     case 'DiceRolled': {
       const groups = details.diceGroups?.length
         ? details.diceGroups.slice(0, 2).map((group) => `${group.expression}: ${group.dice.join(' + ')} = ${group.total}`)

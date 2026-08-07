@@ -202,13 +202,15 @@ export function App() {
             onDamage={controller.actions.damage}
             onHeal={controller.actions.heal}
             onTemporary={controller.actions.temporary}
-            onClearTemporary={() => controller.actions.temporary(0)}
+            onClearTemporary={controller.actions.clearTemporary}
             onReset={controller.actions.reset}
           />
           <DiceStation
             event={controller.displayDiceEvent}
             busy={controller.busy || controller.isReplaying || controller.hasPendingCommand}
-            onRoll={controller.actions.roll}
+            onRollDamage={controller.actions.rollDamage}
+            onRollHealing={controller.actions.rollHealing}
+            onRollShield={controller.actions.rollShield}
           />
         </aside>
       </div>

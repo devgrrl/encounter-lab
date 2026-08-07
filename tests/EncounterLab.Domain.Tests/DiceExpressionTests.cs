@@ -10,6 +10,8 @@ public sealed class DiceExpressionTests
     [InlineData("d100-10", 1, 100, 0, 0, -10)]
     [InlineData("d8+d6+4", 1, 8, 1, 6, 4)]
     [InlineData("2d6+1d4-2", 2, 6, 1, 4, -2)]
+    [InlineData("d2", 1, 2, 0, 0, 0)]
+    [InlineData("1d20+2d2", 1, 20, 2, 2, 0)]
     public void ParsesSupportedExpressions(
         string input,
         int count,
@@ -30,6 +32,7 @@ public sealed class DiceExpressionTests
     [InlineData("")]
     [InlineData("100d20")]
     [InlineData("2d7")]
+    [InlineData("d1")]
     [InlineData("roll d20")]
     [InlineData("d20+2147483648")]
     [InlineData("d20+10001")]

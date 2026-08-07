@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createCombatHub } from '../api/combatHub';
 import {
   applyDamage,
+  clearTemporaryHitPoints,
   getEncounter,
   GraphQlRequestError,
   healCharacter,
@@ -24,6 +25,7 @@ type CommandIntent =
   | { kind: 'damage'; amount: number; damageType: DamageType }
   | { kind: 'heal'; amount: number }
   | { kind: 'temporary'; amount: number }
+  | { kind: 'clearTemporary' }
   | { kind: 'roll'; expression: string }
   | { kind: 'reset' };
 
@@ -51,6 +53,7 @@ function isPendingCommand(value: unknown): value is PendingCommand {
       return typeof item.amount === 'number';
     case 'roll':
       return typeof item.expression === 'string';
+    case 'clearTemporary':
     case 'reset':
       return true;
     default:
@@ -94,6 +97,8 @@ function sameIntent(command: PendingCommand, intent: CommandIntent): boolean {
       return command.kind === 'temporary' && command.amount === intent.amount;
     case 'roll':
       return command.kind === 'roll' && command.expression === intent.expression;
+    case 'clearTemporary':
+      return command.kind === 'clearTemporary';
     case 'reset':
       return command.kind === 'reset';
   }
@@ -129,6 +134,8 @@ function invokeCommand(command: PendingCommand, signal: AbortSignal): Promise<Co
       return healCharacter({ ...baseInput, amount: command.amount }, options);
     case 'temporary':
       return setTemporaryHitPoints({ ...baseInput, amount: command.amount }, options);
+    case 'clearTemporary':
+      return clearTemporaryHitPoints(baseInput, options);
     case 'roll':
       return rollDice({ ...baseInput, expression: command.expression }, options);
     case 'reset':
@@ -229,8 +236,8 @@ export function useEncounterController() {
     return 'pending' as const;
   }, [setPending]);
 
-  const runPending = useCallback(async (command: PendingCommand) => {
-    if (busyRef.current || replayIndex !== null) return;
+  const runPending = useCallback(async (command: PendingCommand): Promise<CombatResult | null> => {
+    if (busyRef.current || replayIndex !== null) return null;
     busyRef.current = true;
     setBusy(true);
     setCommandError(null);
@@ -240,15 +247,16 @@ export function useEncounterController() {
 
     try {
       const result = await invokeCommand(command, controller.signal);
-      if (!mounted.current) return;
+      if (!mounted.current) return null;
       setPending(null);
       updateEncounter((current) => mergeCombatResult(current, result));
       setPresentationEvent(result.event);
       setSyncWarning(result.wasReplay
         ? 'The command response was replayed from the server’s idempotency record; no action was applied twice.'
         : null);
+      return result;
     } catch (error) {
-      if (!mounted.current || controller.signal.aborted) return;
+      if (!mounted.current || controller.signal.aborted) return null;
       if (error instanceof GraphQlRequestError && error.code === 'VERSION_CONFLICT') {
         setPending(null);
         const refreshed = await load('sync');
@@ -273,6 +281,7 @@ export function useEncounterController() {
         setPending(null);
         setCommandError(error instanceof Error ? error.message : 'The command failed.');
       }
+      return null;
     } finally {
       if (commandAbort.current === controller) commandAbort.current = null;
       busyRef.current = false;
@@ -280,9 +289,11 @@ export function useEncounterController() {
     }
   }, [load, reconcilePending, replayIndex, setPending, updateEncounter]);
 
-  const execute = useCallback(async (intent: CommandIntent) => {
-    const current = encounterRef.current;
-    if (!current || busyRef.current || replayIndex !== null) return;
+  const executeAgainst = useCallback(async (
+    intent: CommandIntent,
+    character: Character,
+  ): Promise<CombatResult | null> => {
+    if (busyRef.current || replayIndex !== null) return null;
 
     const pending = pendingRef.current;
     if (pending) {
@@ -290,16 +301,38 @@ export function useEncounterController() {
         setCommandError(
           'A previous command still has an uncertain outcome. Retry that command before submitting a different action.',
         );
-        return;
+        return null;
       }
-      await runPending(pending);
-      return;
+      return await runPending(pending);
     }
 
-    const command = createPendingCommand(current.character, intent);
+    const command = createPendingCommand(character, intent);
     setPending(command);
-    await runPending(command);
+    return await runPending(command);
   }, [replayIndex, runPending, setPending]);
+
+  const execute = useCallback((intent: CommandIntent): Promise<CombatResult | null> => {
+    const current = encounterRef.current;
+    if (!current) return Promise.resolve(null);
+    return executeAgainst(intent, current.character);
+  }, [executeAgainst]);
+
+  // Rolls dice through the authoritative dice command, then feeds the server-computed
+  // total into a second authoritative command as its requested amount, built against the
+  // character version the roll itself returned. React's state update to encounterRef isn't
+  // guaranteed to have flushed yet at this point, so the second command must not read it —
+  // it uses the roll result's own character directly. Each step is independently idempotent
+  // and version-checked; the client never computes the roll or the HP outcome itself, it
+  // only sequences two already-authoritative commands.
+  const rollInto = useCallback(async (
+    expression: string,
+    next: (total: number) => CommandIntent,
+  ): Promise<void> => {
+    const rollResult = await execute({ kind: 'roll', expression });
+    const total = rollResult?.event.details.total;
+    if (total == null || !rollResult) return;
+    await executeAgainst(next(total), rollResult.character);
+  }, [execute, executeAgainst]);
 
   const retryPending = useCallback(async () => {
     const pending = pendingRef.current;
@@ -364,14 +397,25 @@ export function useEncounterController() {
     };
   }, [load, reconcilePending, setPending, updateEncounter]);
 
+  const runVoid = useCallback(
+    (intent: CommandIntent): Promise<void> => execute(intent).then(() => undefined),
+    [execute],
+  );
+
   const actions = useMemo(() => ({
-    damage: (amount: number, damageType: DamageType) =>
-      execute({ kind: 'damage', amount, damageType }),
-    heal: (amount: number) => execute({ kind: 'heal', amount }),
-    temporary: (amount: number) => execute({ kind: 'temporary', amount }),
-    roll: (expression: string) => execute({ kind: 'roll', expression }),
-    reset: () => execute({ kind: 'reset' }),
-  }), [execute]);
+    damage: (amount: number, damageType: DamageType) => runVoid({ kind: 'damage', amount, damageType }),
+    heal: (amount: number) => runVoid({ kind: 'heal', amount }),
+    temporary: (amount: number) => runVoid({ kind: 'temporary', amount }),
+    clearTemporary: () => runVoid({ kind: 'clearTemporary' }),
+    roll: (expression: string) => runVoid({ kind: 'roll', expression }),
+    reset: () => runVoid({ kind: 'reset' }),
+    rollDamage: (expression: string, damageType: DamageType) =>
+      rollInto(expression, (amount) => ({ kind: 'damage', amount, damageType })),
+    rollHealing: (expression: string) =>
+      rollInto(expression, (amount) => ({ kind: 'heal', amount })),
+    rollShield: (expression: string) =>
+      rollInto(expression, (amount) => ({ kind: 'temporary', amount })),
+  }), [rollInto, runVoid]);
 
   const displayProjection = useMemo(() => {
     if (!encounter) {

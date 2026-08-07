@@ -37,7 +37,15 @@ public sealed class CombatService(
         CancellationToken cancellationToken) =>
         ExecuteAndNotifyAsync(
             Normalize(command),
-            state => state.SetTemporaryHitPoints(RequireNonNegative(command.Amount, nameof(command.Amount))),
+            state => state.SetTemporaryHitPoints(RequirePositive(command.Amount, nameof(command.Amount))),
+            cancellationToken);
+
+    public Task<CombatResult> ClearTemporaryHitPointsAsync(
+        ClearTemporaryHitPointsCommand command,
+        CancellationToken cancellationToken) =>
+        ExecuteAndNotifyAsync(
+            Normalize(command),
+            state => state.ClearTemporaryHitPoints(),
             cancellationToken);
 
     public Task<CombatResult> RollDiceAsync(
@@ -126,6 +134,13 @@ public sealed class CombatService(
         ExpectedVersion = RequireExpectedVersion(command.ExpectedVersion)
     };
 
+    private static ClearTemporaryHitPointsCommand Normalize(ClearTemporaryHitPointsCommand command) => command with
+    {
+        CharacterId = RequireCharacterId(command.CharacterId),
+        CommandId = RequireCommandId(command.CommandId),
+        ExpectedVersion = RequireExpectedVersion(command.ExpectedVersion)
+    };
+
     private static DiceRollCommand Normalize(DiceRollCommand command) => command with
     {
         CharacterId = RequireCharacterId(command.CharacterId),
@@ -146,6 +161,7 @@ public sealed class CombatService(
         DamageCommand value => $"damage|{value.CharacterId}|{value.ExpectedVersion}|{value.Amount}|{value.DamageType}",
         HealCommand value => $"heal|{value.CharacterId}|{value.ExpectedVersion}|{value.Amount}",
         SetTemporaryHitPointsCommand value => $"temporary|{value.CharacterId}|{value.ExpectedVersion}|{value.Amount}",
+        ClearTemporaryHitPointsCommand value => $"clear-temporary|{value.CharacterId}|{value.ExpectedVersion}",
         DiceRollCommand value => $"dice|{value.CharacterId}|{value.ExpectedVersion}|{value.Expression.ToLowerInvariant()}",
         ResetEncounterCommand value => $"reset|{value.CharacterId}|{value.ExpectedVersion}",
         _ => throw new CombatValidationException("Unsupported command type.")
@@ -211,15 +227,6 @@ public sealed class CombatService(
         if (value <= 0)
         {
             throw new CombatValidationException($"{name} must be greater than zero.");
-        }
-        return value;
-    }
-
-    private static int RequireNonNegative(int value, string name)
-    {
-        if (value < 0)
-        {
-            throw new CombatValidationException($"{name} cannot be negative.");
         }
         return value;
     }

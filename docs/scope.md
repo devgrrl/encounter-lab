@@ -18,7 +18,8 @@ Encounter Lab intentionally solves the supplied HP exercise first and adds only 
 
 - GraphQL workflow contracts.
 - SignalR synchronization between browser clients.
-- Server-authoritative dice.
+- Server-authoritative dice, including "Roll Damage" / "Roll Healing" / "Roll Shield" controls that sequence a dice roll and its HP-engine application as two independently authoritative commands (`docs/architecture.md`'s "Rolling into the HP engine").
+- A dedicated `ClearTemporaryHitPoints` command, kept separate from granting temporary HP, so clearing is never a disguised zero-amount grant request.
 - Idempotent command handling with payload-conflict detection.
 - Optimistic concurrency.
 - Automatic reconnect and monotonic client reconciliation.

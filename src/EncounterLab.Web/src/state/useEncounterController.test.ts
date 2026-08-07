@@ -15,12 +15,14 @@ vi.mock('../api/combatHub', () => ({
 }));
 
 const {
-  getEncounterMock, applyDamageMock, healCharacterMock, setTemporaryHitPointsMock, rollDiceMock, resetEncounterMock,
+  getEncounterMock, applyDamageMock, healCharacterMock, setTemporaryHitPointsMock,
+  clearTemporaryHitPointsMock, rollDiceMock, resetEncounterMock,
 } = vi.hoisted(() => ({
   getEncounterMock: vi.fn(),
   applyDamageMock: vi.fn(),
   healCharacterMock: vi.fn(),
   setTemporaryHitPointsMock: vi.fn(),
+  clearTemporaryHitPointsMock: vi.fn(),
   rollDiceMock: vi.fn(),
   resetEncounterMock: vi.fn(),
 }));
@@ -33,6 +35,7 @@ vi.mock('../api/graphql', async (importOriginal) => {
     applyDamage: applyDamageMock,
     healCharacter: healCharacterMock,
     setTemporaryHitPoints: setTemporaryHitPointsMock,
+    clearTemporaryHitPoints: clearTemporaryHitPointsMock,
     rollDice: rollDiceMock,
     resetEncounter: resetEncounterMock,
   };
@@ -88,6 +91,7 @@ beforeEach(() => {
   applyDamageMock.mockReset();
   healCharacterMock.mockReset();
   setTemporaryHitPointsMock.mockReset();
+  clearTemporaryHitPointsMock.mockReset();
   rollDiceMock.mockReset();
   resetEncounterMock.mockReset();
   vi.useRealTimers();
@@ -281,6 +285,7 @@ test.each([
 test.each([
   ['roll', JSON.stringify({ characterId: 'briv', commandId: 'x', expectedVersion: 0, kind: 'roll', expression: '1d20' })],
   ['reset', JSON.stringify({ characterId: 'briv', commandId: 'x', expectedVersion: 0, kind: 'reset' })],
+  ['clearTemporary', JSON.stringify({ characterId: 'briv', commandId: 'x', expectedVersion: 0, kind: 'clearTemporary' })],
 ])('restores a valid stored %s pending command', async (_label, stored) => {
   window.sessionStorage.setItem(pendingStorageKey, stored);
   const { result } = renderHook(() => useEncounterController());
@@ -306,15 +311,93 @@ test('healing and temporary HP actions succeed and update the encounter', async 
   expect(result.current.encounter?.character.hitPoints.temporary).toBe(10);
 });
 
+test('clearTemporary calls the dedicated clear mutation, not setTemporaryHitPoints', async () => {
+  clearTemporaryHitPointsMock.mockResolvedValue(makeResult({
+    character: makeCharacter({ version: 1, hitPoints: { current: 25, maximum: 25, temporary: 0 } }),
+  }));
+  const { result } = renderHook(() => useEncounterController());
+  await waitFor(() => expect(result.current.encounter).not.toBeNull());
+
+  await act(async () => { await result.current.actions.clearTemporary(); });
+
+  expect(clearTemporaryHitPointsMock).toHaveBeenCalledTimes(1);
+  expect(setTemporaryHitPointsMock).not.toHaveBeenCalled();
+});
+
+test('rollDamage rolls dice through the server, then applies the rolled total as damage', async () => {
+  rollDiceMock.mockResolvedValue(makeResult({
+    character: makeCharacter({ version: 1 }),
+    event: makeEvent({ type: 'DiceRolled', details: { total: 9 } }),
+  }));
+  applyDamageMock.mockResolvedValue(makeResult({
+    character: makeCharacter({ version: 2, hitPoints: { current: 16, maximum: 25, temporary: 0 } }),
+  }));
+  const { result } = renderHook(() => useEncounterController());
+  await waitFor(() => expect(result.current.encounter).not.toBeNull());
+
+  await act(async () => { await result.current.actions.rollDamage('1d10', 'FIRE'); });
+
+  expect(rollDiceMock).toHaveBeenCalledTimes(1);
+  expect(rollDiceMock.mock.calls[0][0]).toMatchObject({ expression: '1d10' });
+  expect(applyDamageMock).toHaveBeenCalledTimes(1);
+  expect(applyDamageMock.mock.calls[0][0]).toMatchObject({ amount: 9, damageType: 'FIRE', expectedVersion: 1 });
+  expect(result.current.encounter?.character.hitPoints.current).toBe(16);
+});
+
+test('rollHealing rolls dice through the server, then applies the rolled total as healing', async () => {
+  rollDiceMock.mockResolvedValue(makeResult({
+    character: makeCharacter({ version: 1 }),
+    event: makeEvent({ type: 'DiceRolled', details: { total: 6 } }),
+  }));
+  healCharacterMock.mockResolvedValue(makeResult({ character: makeCharacter({ version: 2 }) }));
+  const { result } = renderHook(() => useEncounterController());
+  await waitFor(() => expect(result.current.encounter).not.toBeNull());
+
+  await act(async () => { await result.current.actions.rollHealing('1d8'); });
+
+  expect(healCharacterMock).toHaveBeenCalledTimes(1);
+  expect(healCharacterMock.mock.calls[0][0]).toMatchObject({ amount: 6, expectedVersion: 1 });
+});
+
+test('rollShield rolls dice through the server, then grants the rolled total as temporary HP', async () => {
+  rollDiceMock.mockResolvedValue(makeResult({
+    character: makeCharacter({ version: 1 }),
+    event: makeEvent({ type: 'DiceRolled', details: { total: 4 } }),
+  }));
+  setTemporaryHitPointsMock.mockResolvedValue(makeResult({
+    character: makeCharacter({ version: 2, hitPoints: { current: 25, maximum: 25, temporary: 4 } }),
+  }));
+  const { result } = renderHook(() => useEncounterController());
+  await waitFor(() => expect(result.current.encounter).not.toBeNull());
+
+  await act(async () => { await result.current.actions.rollShield('1d4'); });
+
+  expect(setTemporaryHitPointsMock).toHaveBeenCalledTimes(1);
+  expect(setTemporaryHitPointsMock.mock.calls[0][0]).toMatchObject({ amount: 4, expectedVersion: 1 });
+});
+
+test('a composite roll action never applies an HP command if the dice roll itself fails', async () => {
+  rollDiceMock.mockRejectedValue(new GraphQlRequestError('bad expression', { code: 'VALIDATION_ERROR', uncertain: false }));
+  const { result } = renderHook(() => useEncounterController());
+  await waitFor(() => expect(result.current.encounter).not.toBeNull());
+
+  await act(async () => { await result.current.actions.rollDamage('garbage', 'FIRE'); });
+
+  expect(applyDamageMock).not.toHaveBeenCalled();
+  expect(result.current.commandError).toBe('bad expression');
+});
+
 test.each([
   ['heal', JSON.stringify({ characterId: 'briv', commandId: 'restored', expectedVersion: 0, kind: 'heal', amount: 5 })],
   ['temporary', JSON.stringify({ characterId: 'briv', commandId: 'restored', expectedVersion: 0, kind: 'temporary', amount: 5 })],
+  ['clearTemporary', JSON.stringify({ characterId: 'briv', commandId: 'restored', expectedVersion: 0, kind: 'clearTemporary' })],
   ['roll', JSON.stringify({ characterId: 'briv', commandId: 'restored', expectedVersion: 0, kind: 'roll', expression: '1d20' })],
   ['reset', JSON.stringify({ characterId: 'briv', commandId: 'restored', expectedVersion: 0, kind: 'reset' })],
 ])('resubmitting a restored %s intent retries the same command', async (kind, stored) => {
   window.sessionStorage.setItem(pendingStorageKey, stored);
   healCharacterMock.mockResolvedValue(makeResult());
   setTemporaryHitPointsMock.mockResolvedValue(makeResult());
+  clearTemporaryHitPointsMock.mockResolvedValue(makeResult());
   rollDiceMock.mockResolvedValue(makeResult());
   resetEncounterMock.mockResolvedValue(makeResult());
   const { result } = renderHook(() => useEncounterController());
@@ -322,10 +405,17 @@ test.each([
 
   if (kind === 'heal') await act(async () => { await result.current.actions.heal(5); });
   else if (kind === 'temporary') await act(async () => { await result.current.actions.temporary(5); });
+  else if (kind === 'clearTemporary') await act(async () => { await result.current.actions.clearTemporary(); });
   else if (kind === 'roll') await act(async () => { await result.current.actions.roll('1d20'); });
   else await act(async () => { await result.current.actions.reset(); });
 
-  const mock = { heal: healCharacterMock, temporary: setTemporaryHitPointsMock, roll: rollDiceMock, reset: resetEncounterMock }[kind];
+  const mock = {
+    heal: healCharacterMock,
+    temporary: setTemporaryHitPointsMock,
+    clearTemporary: clearTemporaryHitPointsMock,
+    roll: rollDiceMock,
+    reset: resetEncounterMock,
+  }[kind];
   expect(mock.mock.calls[0][0]).toMatchObject({ commandId: 'restored' });
   expect(result.current.hasPendingCommand).toBe(false);
 });

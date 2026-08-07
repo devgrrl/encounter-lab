@@ -71,11 +71,19 @@ public sealed class HitPointPoolTests
     }
 
     [Fact]
-    public void RequestingZeroTemporaryHitPointsClearsUnconditionally()
+    public void ClearTemporaryHitPointsAlwaysResetsToZero()
     {
-        var result = new HitPointPool(25, 25, 10).SetTemporaryHitPoints(0);
+        var result = new HitPointPool(25, 25, 10).ClearTemporaryHitPoints();
         Assert.Equal(0, result.Next.Temporary);
-        Assert.Equal(0, result.AppliedTemporaryHitPoints);
+        Assert.Equal(10, result.PreviousTemporaryHitPoints);
+    }
+
+    [Fact]
+    public void ClearTemporaryHitPointsWhenAlreadyZeroIsANoOp()
+    {
+        var result = new HitPointPool(25, 25).ClearTemporaryHitPoints();
+        Assert.Equal(0, result.Next.Temporary);
+        Assert.Equal(0, result.PreviousTemporaryHitPoints);
     }
 
     [Theory]
@@ -117,10 +125,12 @@ public sealed class HitPointPoolTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new HitPointPool(20, 25).Heal(amount));
     }
 
-    [Fact]
-    public void TemporaryHitPointsMustNotBeNegativeWhenSet()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void TemporaryHitPointsMustBePositiveWhenSet(int amount)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new HitPointPool(25, 25).SetTemporaryHitPoints(-1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new HitPointPool(25, 25).SetTemporaryHitPoints(amount));
     }
 
     [Fact]

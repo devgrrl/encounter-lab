@@ -39,6 +39,17 @@ EF Core + SQLite
 
 SQLite is intentionally used for zero-configuration review. Each command starts an immediate SQLite transaction before reading the command record and snapshot, so competing API processes serialize at the database boundary rather than relying on an in-process semaphore. The optimistic version check still gives callers a structured conflict. The `ICombatStore` boundary is designed so PostgreSQL can replace this with row-level locking in production.
 
+## Rolling into the HP engine
+
+The dice station's "Roll Damage", "Roll Healing", and "Roll Shield" buttons do not add a new server operation. Each one sequences two already-authoritative commands from the browser:
+
+1. `rollDice` — the server rolls the expression and returns the committed total.
+2. `applyDamage` / `healCharacter` / `setTemporaryHitPoints` — the browser submits that total as the requested amount, exactly as if the user had typed it into the manual form.
+
+The server rolls the dice and independently computes the HP outcome (resistance, immunity, temporary-HP absorption); the client only relays an already-authoritative number between two calls. The second command's `expectedVersion` comes from the character the first command's response returned, not from client-side state — the render that reflects the roll may not have flushed yet when the second command is built, so reading component state here would race and send a stale version.
+
+There is no cross-step atomicity: these are two separate committed events, not one transaction. If the roll commits and the follow-up command then fails (or the browser closes in between), the roll stands alone in history with no HP effect, and the failure surfaces through the same command-error path as any other rejected command — visibly, not silently. This mirrors tabletop play: rolling and applying are genuinely two steps, not one.
+
 ## Historical playback
 
 Every event contains a compact `stateAfter` projection. The server retains the newest 1,000 events per character and returns the newest 250 in a snapshot; the browser keeps the same bounded window. The UI marks truncated history instead of pretending the oldest visible event is the initial state. Dice outcomes are recorded once and displayed from the committed event. This is intentionally not presented as full event-sourced aggregate reconstruction.

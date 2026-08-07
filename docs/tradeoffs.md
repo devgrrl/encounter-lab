@@ -107,6 +107,35 @@ complexity (`useEncounterController.ts`'s pending-command reconciliation,
 design wouldn't need — accepted because the alternative is an incorrect
 combat system, not a simpler correct one.
 
+## Dice-to-HP composition: two sequential commands, not one atomic action
+
+**Picked:** The "Roll Damage" / "Roll Healing" / "Roll Shield" controls issue two
+separate, fully authoritative commands in sequence — `rollDice`, then
+`applyDamage` / `healCharacter` / `setTemporaryHitPoints`, using the roll's own
+returned total and character version — instead of one server-side "roll and
+apply" mutation.
+
+**Not picked:** A combined mutation that rolls dice and applies the result to
+HP inside a single transaction, emitting one event.
+
+**Why:** Every other command in this system is already independently
+idempotent and version-checked; a combined operation would mean inventing a
+new event shape that mixes dice-roll and HP-outcome data, and a new
+idempotency fingerprint scheme, for a case that the existing two commands
+already handle correctly in sequence. The client isn't computing anything new
+here — it relays an already-authoritative roll total as the requested amount
+for a second already-authoritative command, exactly as it would relay a
+manually typed number.
+
+**What this costs:** No atomicity across the two steps. If the roll commits
+and the follow-up command fails (or the browser closes in between), the roll
+stands alone in the event history with no HP effect. This is visible rather
+than silently wrong: the roll appears in the transcript, the follow-up
+failure surfaces through the same command-error path as any other rejected
+command, and the total is still on screen to resubmit. Real tabletop play has
+the same two-step shape — you roll, then someone applies it — so this isn't a
+compromise so much as an accurate model of what actually happened.
+
 ## No authentication or authorization
 
 **Picked:** Nothing. Any client that can reach the API can act as Briv.

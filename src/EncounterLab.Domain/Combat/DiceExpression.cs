@@ -13,7 +13,7 @@ public sealed partial record DiceExpression
     public const int MaximumDice = 20;
     public const int MaximumTerms = 2;
     public const int MaximumAbsoluteModifier = 10_000;
-    private static readonly HashSet<int> AllowedSides = [4, 6, 8, 10, 12, 20, 100];
+    private static readonly HashSet<int> AllowedSides = [2, 4, 6, 8, 10, 12, 20, 100];
 
     private DiceExpression(IReadOnlyList<DiceTerm> terms, int modifier)
     {
@@ -96,7 +96,7 @@ public sealed partial record DiceExpression
 
         if (!AllowedSides.Contains(sides))
         {
-            throw new FormatException("Allowed dice are d4, d6, d8, d10, d12, d20, and d100.");
+            throw new FormatException("Allowed dice are d2, d4, d6, d8, d10, d12, d20, and d100.");
         }
 
         return new DiceTerm(count, sides);

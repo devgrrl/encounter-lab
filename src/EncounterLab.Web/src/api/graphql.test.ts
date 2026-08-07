@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import {
   applyDamage,
+  clearTemporaryHitPoints,
   GraphQlRequestError,
   getEncounter,
   healCharacter,
@@ -179,6 +180,7 @@ test.each([
   ['applyDamage', () => applyDamage({ ...baseInput, amount: 5, damageType: 'FIRE' })],
   ['healCharacter', () => healCharacter({ ...baseInput, amount: 5 })],
   ['setTemporaryHitPoints', () => setTemporaryHitPoints({ ...baseInput, amount: 5 })],
+  ['clearTemporaryHitPoints', () => clearTemporaryHitPoints(baseInput)],
   ['rollDice', () => rollDice({ ...baseInput, expression: '1d20' })],
   ['resetEncounter', () => resetEncounter(baseInput)],
 ] as const)('%s posts the matching mutation field and unwraps its result', async (field, invoke) => {

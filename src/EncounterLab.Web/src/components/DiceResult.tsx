@@ -1,8 +1,10 @@
-import { useMemo, useState, type FormEvent } from 'react';
-import type { CombatEvent, DiceGroupResult } from '../types';
+import { useMemo, useState } from 'react';
+import type { CombatEvent, DamageType, DiceGroupResult } from '../types';
+import { damageTypes, titleCase } from '../utils/damageTypes';
 import styles from './DiceResult.module.css';
+import { DamageIcon, HealIcon, ShieldIcon } from './icons';
 
-const standardDice = [4, 6, 8, 10, 12, 20, 100] as const;
+const standardDice = [2, 4, 6, 8, 10, 12, 20, 100] as const;
 
 interface ParsedExpression {
   terms: Array<{ count: number; sides: number }>;
@@ -68,14 +70,19 @@ function DieTile({ group, slot }: { group: DiceGroupResult | null; slot: 1 | 2 }
 export function DiceStation({
   event,
   busy,
-  onRoll,
+  onRollDamage,
+  onRollHealing,
+  onRollShield,
 }: {
   event: CombatEvent | null;
   busy: boolean;
-  onRoll: (expression: string) => Promise<void> | void;
+  onRollDamage: (expression: string, damageType: DamageType) => Promise<void> | void;
+  onRollHealing: (expression: string) => Promise<void> | void;
+  onRollShield: (expression: string) => Promise<void> | void;
 }) {
-  const [expression, setExpression] = useState('1d20');
+  const [expression, setExpression] = useState('1d20+2d6');
   const [selectionStarted, setSelectionStarted] = useState(false);
+  const [damageType, setDamageType] = useState<DamageType>('PIERCING');
   const parsed = useMemo(() => parseExpression(expression), [expression]);
   const groups = eventGroups(event);
   const details = event?.type === 'DiceRolled' ? event.details : null;
@@ -108,18 +115,50 @@ export function DiceStation({
     setExpression(formatExpression({ terms, modifier: current.modifier }));
   };
 
-  const submit = (submitEvent: FormEvent) => {
-    submitEvent.preventDefault();
-    void onRoll(expression);
-  };
+  const canRoll = !busy && parsed !== null;
 
   return (
     <section className={styles.station} aria-label="Dice roller" data-testid="dice-result">
       <p className={styles.srOnly} role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
 
-      <form className={styles.controls} onSubmit={submit}>
+      {needsCombinedTotal && (
+        <div className={styles.combined} aria-label={`Combined total ${total}`}>
+          <span>Total</span>
+          <strong>{total}</strong>
+          {modifier !== 0 && <small>{modifier > 0 ? `Modifier +${modifier}` : `Modifier ${modifier}`}</small>}
+        </div>
+      )}
+
+      <div className={styles.results}>
+        <DieTile group={groups[0] ?? null} slot={1} />
+        <DieTile group={groups[1] ?? null} slot={2} />
+      </div>
+
+      <div className={styles.controls}>
+        <div className={styles.rollRow}>
+          <label className={styles.srOnly} htmlFor="dice-expression">Dice expression</label>
+          <input
+            id="dice-expression"
+            required
+            maxLength={64}
+            value={expression}
+            onChange={(changeEvent) => {
+              setSelectionStarted(true);
+              setExpression(changeEvent.target.value);
+            }}
+            placeholder="1d8+1d6+3"
+            autoComplete="off"
+            spellCheck={false}
+            aria-describedby="dice-expression-help"
+          />
+        </div>
+        <p id="dice-expression-help" className={styles.srOnly}>
+          Use one or two dice groups, such as d20 or d8 plus d6 plus 4. Rolling always applies the result through one
+          of the buttons below — the server rolls the dice and computes the hit-point outcome.
+        </p>
+
         <fieldset className={styles.picker}>
-          <legend className={styles.srOnly}>Select up to two dice groups</legend>
+          <legend className={styles.pickerLegend}>Pick up to two dice types — e.g. 1d20 + 2d6</legend>
           {standardDice.map((sides) => {
             const slot = parsed?.terms.findIndex((term) => term.sides === sides) ?? -1;
             return (
@@ -138,37 +177,48 @@ export function DiceStation({
           })}
         </fieldset>
 
-        <div className={styles.rollRow}>
-          <label className={styles.srOnly} htmlFor="dice-expression">Dice expression</label>
-          <input
-            id="dice-expression"
-            required
-            maxLength={64}
-            value={expression}
-            onChange={(changeEvent) => {
-              setSelectionStarted(true);
-              setExpression(changeEvent.target.value);
-            }}
-            placeholder="1d8+1d6+3"
-            autoComplete="off"
-            spellCheck={false}
-            aria-describedby="dice-expression-help"
-          />
-          <button disabled={busy} type="submit">Roll</button>
+        <div className={styles.rollActions}>
+          <button
+            type="button"
+            className={styles.rollDamageButton}
+            disabled={!canRoll}
+            title="Roll dice and apply the total as damage"
+            onClick={() => void onRollDamage(expression, damageType)}
+          >
+            <DamageIcon />
+            <span>Roll Damage</span>
+          </button>
+          <button
+            type="button"
+            className={styles.rollHealButton}
+            disabled={!canRoll}
+            title="Roll dice and apply the total as healing"
+            onClick={() => void onRollHealing(expression)}
+          >
+            <HealIcon />
+            <span>Roll Healing</span>
+          </button>
+          <button
+            type="button"
+            className={styles.rollShieldButton}
+            disabled={!canRoll}
+            title="Roll dice and grant the total as temporary HP"
+            onClick={() => void onRollShield(expression)}
+          >
+            <ShieldIcon />
+            <span>Roll Shield</span>
+          </button>
+          <label className={styles.rollDamageType}>
+            <span className={styles.srOnly}>Damage type for Roll Damage</span>
+            <select
+              disabled={busy}
+              value={damageType}
+              onChange={(changeEvent) => setDamageType(changeEvent.target.value as DamageType)}
+            >
+              {damageTypes.map((type) => <option key={type} value={type}>{titleCase(type)}</option>)}
+            </select>
+          </label>
         </div>
-        <p id="dice-expression-help" className={styles.srOnly}>Use one or two dice groups, such as d20 or d8 plus d6 plus 4.</p>
-      </form>
-
-      <div className={styles.results}>
-        <DieTile group={groups[0] ?? null} slot={1} />
-        <DieTile group={groups[1] ?? null} slot={2} />
-        {needsCombinedTotal && (
-          <div className={styles.combined} aria-label={`Combined total ${total}`}>
-            <span>Total</span>
-            <strong>{total}</strong>
-            {modifier !== 0 && <small>{modifier > 0 ? `Modifier +${modifier}` : `Modifier ${modifier}`}</small>}
-          </div>
-        )}
       </div>
     </section>
   );

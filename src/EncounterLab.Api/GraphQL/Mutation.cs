@@ -43,6 +43,17 @@ public sealed class Mutation
                 input.Amount),
             cancellationToken));
 
+    public async Task<CombatResultPayload> ClearTemporaryHitPoints(
+        ClearTemporaryHitPointsInput input,
+        [Service] CombatService service,
+        CancellationToken cancellationToken) =>
+        CombatResultPayload.From(await service.ClearTemporaryHitPointsAsync(
+            new ClearTemporaryHitPointsCommand(
+                input.CharacterId,
+                input.CommandId,
+                input.ExpectedVersion),
+            cancellationToken));
+
     public async Task<CombatResultPayload> RollDice(
         DiceRollInput input,
         [Service] CombatService service,

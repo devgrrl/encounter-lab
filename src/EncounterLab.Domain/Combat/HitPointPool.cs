@@ -74,26 +74,25 @@ public sealed record HitPointPool
 
     public TemporaryHitPointResolution SetTemporaryHitPoints(int requestedTemporaryHitPoints)
     {
-        if (requestedTemporaryHitPoints < 0)
+        if (requestedTemporaryHitPoints <= 0)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(requestedTemporaryHitPoints),
-                "Temporary HP cannot be negative.");
+                "Temporary HP must be greater than zero.");
         }
 
-        // A request of exactly zero is never a meaningful "grant" under the
-        // higher-value-wins rule below (max(current, 0) is always a no-op
-        // once current > 0), so it is treated as an explicit, unconditional
-        // clear instead. Any positive request still only replaces a lower
-        // existing value.
-        var appliedTemporaryHitPoints = requestedTemporaryHitPoints == 0
-            ? 0
-            : Math.Max(Temporary, requestedTemporaryHitPoints);
+        var appliedTemporaryHitPoints = Math.Max(Temporary, requestedTemporaryHitPoints);
         var next = new HitPointPool(Current, Maximum, appliedTemporaryHitPoints);
         return new TemporaryHitPointResolution(
             next,
             requestedTemporaryHitPoints,
             appliedTemporaryHitPoints);
+    }
+
+    public TemporaryHitPointClearResolution ClearTemporaryHitPoints()
+    {
+        var next = new HitPointPool(Current, Maximum, 0);
+        return new TemporaryHitPointClearResolution(next, Temporary);
     }
 }
 
@@ -114,3 +113,7 @@ public sealed record TemporaryHitPointResolution(
     HitPointPool Next,
     int RequestedTemporaryHitPoints,
     int AppliedTemporaryHitPoints);
+
+public sealed record TemporaryHitPointClearResolution(
+    HitPointPool Next,
+    int PreviousTemporaryHitPoints);
